@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+    <form action="/results" method="POST">
+        <label for="Title" style="font-family:tahoma"><b><%= title %></b></label>
+        <br><br>
+        <label for="preText" style="font-family:tahoma;"><b>Pre-Text</b></label>
+        <br><br>
+
+        <% var totalQuestions = 0; %>
+        <% questions.forEach(function(question) { %>
+            <% totalQuestions++; %>
+
+            <label for="questionOne" style="font-family:tahoma;"><b><%= question %></b></label>
+
+            <input type="checkbox" name="questionAnswer[]" /><br><br>
+            <!--<label for="answerChoices" style="font-family:georgia;">Answer Choice 1:</label>
+              <input type="checkbox">
+              <br><br>
+              <label for="answerChoices" style="font-family:georgia;">Answer Choice 2:</label>
+              <input type="checkbox">
+              <br><br>
+              <br><br>-->
+        <% }); %>
+        <input type="hidden" name="title" value="<%= title %>"/>
+        <input type="hidden" name="feedbackText" value="<%= feedbackText %>"/>
+        <input type="hidden" name="totalQuestions" value="<%= totalQuestions %>"/>
+        <input type="submit" value="Submit!">
+    </form>
+</body>
+</html>
