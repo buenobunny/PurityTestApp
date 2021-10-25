@@ -1,9 +1,6 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Purity Test Generator</title>
-</head>
-<body>
-    <h1>Hello world!</h1>
-</body>
-</html>
+<%- include('partials/header.ejs', {title: undefined}); %>
+    <% if (test_list) { %>
+        <h2>Top 10 Tests</h2>
+        <%- include('partials/testlist.ejs', {list: test_list}); %>
+    <% } %>
+<%- include('partials/footer.ejs'); %>

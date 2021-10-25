@@ -1,99 +1,159 @@
-<!DOCTYPE html>
-<html>
-<head>
+<%- include('partials/header.ejs', {title: title}); %>
+<style>
+    #filldetails, #addOne, #subOne {
+        float: right;
+        margin-left: 5px;
+    }
+    #labQuestions {
+        display: inline;
+    }
+    input[type=textarea], input[type=text] {
+        margin-bottom: 20px;
+    }
+    #questionsHeader {
+        margin-bottom: 20px;
+    }
+    #actualQuestions input {
+        margin-bottom: 5px;
+    }
+    label {
+        font-size: 16px;
+        font-weight: 900;
+    }
+    small {
+        display: block;
+    }
+</style>
+    <div id="questionsHeader">
+        <label id="labQuestions" for="numberOfQuestions"><b>Number of Questions:</b></label>
+        <input type="number" id="nQuestions" name="nQuestions"/>
+        <button id="filldetails" onclick="addQuestions()">Submit</button>
+        <button id="addOne" onclick="subOne()">Remove One</button>
+        <button id="subOne" onclick="addOne()">Add One</button>
+    </div>
 
-</head>
-<body>
-    <form action="" method="POST">
-        <label for="numberOfQuestions" style="font-family:tahoma;"><b>Number of Questions:</b></label>
-        <input type="text" id="question" name="question"/><br/><br/>
-        <a href="#" id="filldetails" onclick="addQuestions()">Submit</a>
-        <script type='text/javascript'>
-            function addQuestions()
-            {
-                // Number of inputs to create
-                var number = document.getElementById("question").value;
-
-                // Clear previous contents of the container
-                /*while (container.hasChildNodes())
-                {
-                    container.removeChild(container.lastChild);
-                }*/
-
-                // Container <div> where dynamic content will be placed
-                var container = document.getElementById("container");
-                for (i=number;i>0;i--)
-                {
-                    console.log(i);
-                    // Append a node with a random text
-
-                    // Create an <input> element, set its type and name attributes
-                    var input = document.createElement("input");
-                    input.type = "text";
-                    input.name = "questions[]";
-
-                    // Create an input element for New Question
-                    var newQuestion = document.createElement("input");
-                    newQuestion.setAttribute("type", "text");
-                    newQuestion.setAttribute("name", "questions[]");
-                    newQuestion.setAttribute("placeholder", "New Question");
-
-                    // Create an input element for Answer Choice
-                    var answerChoice = document.createElement("input");
-                    answerChoice.setAttribute("type", "text");
-                    answerChoice.setAttribute("name", "AnswerChoice" + i);
-                    answerChoice.setAttribute("placeholder", "Answer Choice");
-
-                    //Create a button element for add answer choice
-                    var addAnswer = document.createElement("button");
-                    addAnswer.setAttribute("type", "text");
-                    addAnswer.setAttribute("name", "AddAnswerChoice");
-                    addAnswer.setAttribute("placeholder", "Add Answer Choice");
-                    addAnswer.setAttribute("style","width:500px");
-                    addAnswer.setAttribute("style","height:10px");
-
-                    container.prepend(document.createElement("br"));
-                    container.prepend(newQuestion);
-                    container.prepend(document.createTextNode("Question " + i + ": "));
-                    container.prepend(document.createElement("br"));
-                    //container.appendChild(document.createElement("br"));
-                    // container.appendChild(document.createElement("br"));
-                    // container.appendChild(document.createElement("br"));
-                    // container.appendChild(answerChoice);
-                    // container.appendChild(document.createElement("br"));
-                    // container.appendChild(addAnswer);
-                    // container.appendChild(document.createElement("br"));
-                    // container.appendChild(document.createElement("br"));
-                    // container.appendChild(document.createElement("br"));
-                }
-            }
-            //function addAnswerChoice()
-        </script>
-
-        <br><br><br><br>
-    </form>
-    <form id="container" action="/create" method="POST">
-        <br/>
-        <label for="Title" style="font-family:tahoma"><b>Your Test Title:</b></label>
+    <form id="ptgForm" action="/create" method="POST">
+        <label for="Title"><b>Your Test Title:</b></label>
         <input type="text" id="title" name="title"/>
-        <br/><br/>
-        <label for="preText" style="font-family:tahoma;"><b>Pre-Text:</b></label>
         <br/>
-        <label for="preText" style="font-family:Georgia;"><small>Enter some words the test taker will see before taking the test:</small></label>
+        <label for="Title"><b>Custom Link:</b></label>
+        <input type="text" id="easyId" name="easyId"/>
         <br/>
-        <input type="textarea" id="preTextbox" name="preTextbox" rows="4" cols="50"/>
-        <br/><br/>
-        <br/><br/>
-        <label for="result" style="font-family:tahoma;"><b>Feedback for Test Results:</b></label>
+        <label for="preText"><b>Pre-Text:</b></label>
+        <small>Enter some words the test taker will see before taking the test:</small>
+        <input type="textarea" id="preText" name="preText" rows="4" cols="50"/>
         <br/>
-        <label for="result" style="font-family:georgia;"><small>Example: You are 75% proficient in English Grammar</small></label>
-        <br/><br/>
-        <label for="result" style="font-family:georgia;">You are 75%...</label>
+        <label for="result"><b>Feedback for Test Results:</b></label>
+        <small>Example: You are 75% proficient in English Grammar</small>
+        <small>You are 75%...</small>
+        <input type="textarea" id="postText" name="postText" rows="4" cols="50"/>
         <br/>
-        <input type="textarea" id="feedbackText" name="feedbackText" rows="4" cols="50"/>
-        <br/><br/><br/>
+        <label>Questions:</label>
+        <div id="actualQuestions">
+
+        </div>
+        <br/>
         <input type="submit" value="Generate Your Test!"/>
     </form>
+    <script type='text/javascript'>
+        let nQuestions = 0;
 
-</body>
-</html>
+        $("#easyId").change((e) => {
+            if ($("#easyId").val() !== "") {
+                $.ajax({
+                    url: "/validateId",
+                    type: "POST",
+                    data: {
+                        easyId: $("#easyId").val()
+                    },
+                    success: (res) => {
+                        console.log(res);
+                        if (res === "false") {
+                            $("#easyId").attr("style", "background-color:var(--main-color);");
+                        } else {
+                            $("#easyId").attr("style", "background-color:#ed918c;");
+                        }
+                    }
+                })
+            } else {
+                $("#easyId").css("background-color", "inherit");
+            }
+        });
+
+        function addOne() {
+            var container = document.getElementById("actualQuestions");
+            console.log(container);
+
+            var qContainer = document.createElement("div");
+            qContainer.setAttribute("class", "questionDiv");
+
+            // Create an input element for New Question
+            var newQuestion = document.createElement("input");
+            newQuestion.setAttribute("type", "text");
+            newQuestion.setAttribute("name", "questions[]");
+            newQuestion.setAttribute("placeholder", "New Question");
+
+            qContainer.prepend(newQuestion);
+            qContainer.prepend(document.createTextNode("Question " + (nQuestions + 1) + ": "));
+
+            container.append(qContainer);
+
+            nQuestions++;
+        }
+
+        function subOne() {
+            var container = document.getElementById("actualQuestions");
+            if (container.hasChildNodes() && container.childNodes.length > 1) {
+                container.removeChild(container.lastChild);
+                nQuestions--;
+            }
+        }
+
+        function addQuestions() {
+            // Number of inputs to create
+            var number = document.getElementById("nQuestions").value;
+
+            if (number > 0 && number <= 100) {
+                while (nQuestions != number) {
+                    if (nQuestions < number) {
+                        addOne();
+                    } else {
+                        subOne();
+                    }
+                }
+            } else {
+                alert("Please enter a number from 1 to 100."); //TODO: cooler alert
+            }
+
+            // Clear previous contents of the container
+            /*while (container.hasChildNodes())
+            {
+                container.removeChild(container.lastChild);
+            }*/
+        }
+
+        function initQuestions() {
+            while (nQuestions < 10) {
+                addOne();
+            }
+        }
+        initQuestions();
+
+        // $("ptgForm").submit((e) => {
+        //     e.preventDefault();
+        //
+        //     let form = $(this);
+        //     let url = form.attr('action');
+        //
+        //     $.ajax({
+        //         url: '/validate',
+        //         type: 'POST',
+        //         data: form.serialize(),
+        //         success: (res) => {
+        //             $
+        //         }
+        //     })
+        //
+        // });
+    </script>
+<%- include('partials/footer.ejs'); %>

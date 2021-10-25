@@ -8,6 +8,7 @@ try {
     // Copy front-end files
     // fs.copySync('./src/credentials', './dist/credentials');
     fs.copySync('./src/views', './dist/views');
+    fs.copySync('./src/assets', './dist/assets');
 } catch (err) {
     console.log(err);
 }
