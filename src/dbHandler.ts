@@ -13,9 +13,9 @@ export class DBHandler {
 
     async getTests(num: number, start: number): Promise<PurityTest[] | null> {
         try {
-            await this.client.connect();
+            let connection = await this.client.connect();
 
-            const db = this.client.db("PurityTests");
+            const db = connection.db("PurityTests");
             const tests = db.collection("Tests");
 
             const cursor = await tests.find({ views: { $gt: 0 }},
@@ -38,7 +38,7 @@ export class DBHandler {
                 }
                 i++;
             }
-            await this.client.close();
+            await connection.close();
             return toReturn;
         } catch(e) {
             console.log(e);
@@ -48,14 +48,14 @@ export class DBHandler {
 
     async checkAlreadyExists(easyId: string): Promise<boolean> {
         try {
-            await this.client.connect();
+            let conn = await this.client.connect();
 
-            const db = this.client.db("PurityTests");
+            const db = conn.db("PurityTests");
             const tests = db.collection("Tests");
 
             const query = { easyId: easyId };
             const check = await tests.findOne(query);
-            await this.client.close();
+            await conn.close();
 
             return check != null;
         } catch (e) {
@@ -65,9 +65,9 @@ export class DBHandler {
 
     async addTest(test: PurityTest): Promise<boolean> {
         try {
-            await this.client.connect();
+            let conn = await this.client.connect();
 
-            const db = this.client.db("PurityTests");
+            const db = conn.db("PurityTests");
             const tests = db.collection("Tests");
 
             const query = { easyId: test.easyId };
@@ -78,7 +78,7 @@ export class DBHandler {
 
             const result = await tests.insertOne(test.serialize());
 
-            await this.client.close();
+            await conn.close();
             return result.acknowledged;
         } catch (e) {
             return false;
@@ -88,15 +88,14 @@ export class DBHandler {
     async findTest(easyId: string): Promise<PurityTest | null> {
 
         try {
-            await this.client.connect();
+            let conn = await this.client.connect();
 
-            const db = this.client.db("PurityTests");
+            const db = conn.db("PurityTests");
             const tests = db.collection("Tests");
 
             const query = {easyId: easyId};
             const result = await tests.findOne(query);
-
-            await this.client.close();
+            await conn.close();
 
             if (result) {
                 return PurityTest.deserialize(result);
@@ -110,7 +109,7 @@ export class DBHandler {
 
     async updateTest(pt: PurityTest): Promise<boolean> {
         try {
-            await this.client.connect();
+            let conn = await this.client.connect();
             const database = this.client.db("PurityTests");
             const tests = database.collection("Tests");
             const filter = { easyId: pt.easyId };
@@ -123,7 +122,7 @@ export class DBHandler {
             };
             const result = await tests.updateOne(filter, updateDoc, options);
 
-            await this.client.close();
+            await conn.close();
             return result.matchedCount == 1;
         } catch (e) {
             return false;
