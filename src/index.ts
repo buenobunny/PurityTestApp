@@ -60,7 +60,7 @@ app.post('/create', async (req: Request, res: Response) => {
 
     let result = await dbHandler.addTest(
         new PurityTest(req.body.title, req.body["questions[]"],
-            req.body.postText, req.body.preText, req.body.easyId));
+            req.body.preText, req.body.postText, req.body.easyId));
 
     if (result) {
         res.redirect('/show/' + req.body.easyId);

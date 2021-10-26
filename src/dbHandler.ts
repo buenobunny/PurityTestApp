@@ -117,7 +117,9 @@ export class DBHandler {
             const updateDoc = {
                 $set: {
                     likes: pt.likes,
-                    views: pt.views
+                    views: pt.views,
+                    preText: pt.preText,
+                    postText: pt.postText
                 },
             };
             const result = await tests.updateOne(filter, updateDoc, options);

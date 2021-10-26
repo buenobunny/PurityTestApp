@@ -3,21 +3,24 @@
         h1 {
 
         }
+        form p {
+            display: inline;
+        }
     </style>
     <form action="/results" method="POST">
         <h1><%= title %></h1>
         <p>Views: <%= views %></p>
-        <br>
+        <br/>
         <p><%= preText %></p>
-        <br>
+        <br/><br/>
 
         <% var totalQuestions = 0; %>
         <% questions.forEach(function(question) { %>
             <% totalQuestions++; %>
 
-            <label for="questionOne" style="font-family:tahoma;"><b><%= totalQuestions %>. <%= question %></b></label>
+            <p><%= totalQuestions %>. </p>
 
-            <input type="checkbox" name="questionAnswer[]" /><br><br>
+            <input type="checkbox" name="questionAnswer[]" /><p> <%= question %></p><br><br>
         <% }); %>
         <input type="hidden" name="questionAnswer[]" value="1"/>
         <input type="hidden" name="title" value="<%= title %>"/>
