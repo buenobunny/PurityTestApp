@@ -1,4 +1,4 @@
-<%- include('partials/header.ejs', {title: undefined}); %>
+<%- include('partials/header.ejs', {title: undefined, loggedIn: loggedIn}); %>
     <% if (test_list) { %>
         <h2>Top 10 Tests</h2>
         <%- include('partials/testlist.ejs', {list: test_list}); %>

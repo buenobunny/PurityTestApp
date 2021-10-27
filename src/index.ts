@@ -1,3 +1,5 @@
+import {User} from "./objects/User";
+
 require('dotenv').config();
 import {DBHandler} from "./dbHandler";
 // @ts-ignore
@@ -6,15 +8,26 @@ import {Request, Response} from 'express';
 import {PurityTest} from "./objects/PurityTest";
 let ejs = require('ejs');
 const path = require('path');
-var bodyParser = require('body-parser');
+let bodyParser = require('body-parser');
+let cookieParser = require('cookie-parser');
 
 // @ts-ignore
 const app = express();
 app.use(bodyParser.urlencoded({ extended:false }));
 app.use(bodyParser.json());
 app.use(express.static(__dirname + '/assets'));
+app.use(cookieParser());
+
+let emailValidator = require('email-validator');
+
+const cookieOptions = {
+    maxAge: 10000,
+    secure: true,
+    httpOnly: true
+};
 
 let dbHandler: DBHandler = new DBHandler();
+
 
 function getView(viewName: string): string {
     return path.join(__dirname + '/views/') + viewName + '.ejs';
@@ -25,6 +38,12 @@ function getStandard(standard: string): string {
 }
 
 app.get('/new', (req: Request, res: Response) => {
+
+    if (req.cookies == undefined || req.cookies.uid == undefined) {
+        res.redirect('/');
+        return;
+    }
+
     ejs.renderFile(getView('new'),{
         title: "New Test"
         }, {},
@@ -33,6 +52,100 @@ app.get('/new', (req: Request, res: Response) => {
     });
 });
 
+app.get('/login', (req: Request, res: Response) => {
+
+    if (req.query != undefined && req.query.msg != undefined) {
+        ejs.renderFile(getView('login'), {msg: true}, {},
+            (err: Error, str: string) => {
+                res.send(str);
+            });
+    } else {
+        ejs.renderFile(getView('login'), {msg: undefined}, {},
+            (err: Error, str: string) => {
+               res.send(str);
+            });
+    }
+
+});
+
+app.post('/login', async (req: Request, res: Response) => {
+
+    if (req.cookies != undefined && req.cookies.uid != undefined) {
+        res.redirect('/');
+        return;
+    }
+
+    if (req.body == undefined || req.body.user == undefined || req.body.password == undefined) {
+        res.redirect('/login?msg=oopsError');
+        return;
+    }
+
+    let user = await dbHandler.getUser(req.body.user);
+    if (user != null) {
+        let hashedPass = User.hashPass(req.body.password);
+        if (hashedPass == user.passwordHash) {
+            res.cookie("uid", user.uid).redirect('/');
+            return;
+        }
+    }
+    res.redirect('/login?msg=oopsError');
+});
+
+app.get('/signup', (req: Request, res: Response) => {
+
+    if (req.cookies != undefined && req.cookies.uid != undefined) {
+        res.redirect('/');
+        return;
+    }
+
+    ejs.renderFile(getView('signup'),
+        {msg: req.query != undefined && req.query.msg != undefined ? true : undefined}, {},
+        (err: Error, str: string) => {
+            res.send(str);
+        });
+
+});
+
+app.post('/signup', async (req: Request, res: Response) => {
+    if (req.cookies != undefined && req.cookies.uid != undefined) {
+        res.redirect('/');
+        return;
+    }
+
+    //TODO: logic hashing the pass and then sending to check in db
+    if (req.body == undefined || req.body.user == undefined
+        || req.body.email == undefined || req.body.password == undefined
+        || !emailValidator.validate(req.body.email)) {
+        console.log("validation");
+        res.redirect('/signup?msg=oopsError');
+        return;
+    }
+    let alreadyExists = await dbHandler.checkUserExists(req.body.user, req.body.email);
+    if (alreadyExists) {
+        res.redirect('/signup?msg=oopsError');
+        return;
+    }
+
+    let hashedPass = User.hashPass(req.body.password);
+    let user: User = new User(req.body.user, req.body.email, hashedPass, new Set<string>());
+
+    let createdUser = await dbHandler.createUser(user);
+
+    if (createdUser) {
+        res.cookie("uid", createdUser.uid);
+    } else {
+        console.log("couldnt create");
+        res.redirect('/signup?msg=oopsError');
+        return;
+    }
+
+    res.redirect('/');
+
+})
+
+app.get('/logout', (req: Request, res: Response) => {
+    res.clearCookie('uid').redirect('/');
+})
 
 app.post('/validateId', async (req: Request, res: Response) => {
     let isValid = req.body != undefined && req.body.easyId != undefined &&
@@ -42,6 +155,12 @@ app.post('/validateId', async (req: Request, res: Response) => {
 });
 
 app.post('/create', async (req: Request, res: Response) => {
+
+    //TODO: validate loggedIn
+    if (req.cookies == undefined || req.cookies.uid == undefined) {
+        res.redirect('/');
+        return;
+    }
 
     if (!req.body) {
         ejs.renderFile(getStandard('404'), {}, {},
@@ -80,10 +199,10 @@ app.post('/results', (req: Request, res: Response) => {
         return;
     }
 
-    var totalQuestions = parseInt(req.body.totalQuestions);
-    var allAnswers = req.body["questionAnswer[]"];
-    var checkedNumber = allAnswers.length - 1;
-    var resultPercentage = ((checkedNumber / totalQuestions) * 100);
+    let totalQuestions = parseInt(req.body.totalQuestions);
+    let allAnswers = req.body["questionAnswer[]"];
+    let checkedNumber = allAnswers.length - 1;
+    let resultPercentage = 100 - ((checkedNumber / totalQuestions) * 100);
     ejs.renderFile(getView('results'), {
         title: "Results",
         percentage: resultPercentage,
@@ -103,10 +222,11 @@ app.get('/show/:id', async (req: Request, res: Response) => {
             questions: test.questions,
             views: test.views,
             preText: test.preText,
-            postText: test.postText
+            postText: test.postText,
+            loggedIn: req.cookies != undefined && req.cookies.uid != undefined
         }, {}, (err: Error, str: string) => {
             if (err) {
-                res.send(err);
+                res.send(err.name + ": " + err.message);
                 return;
             }
             res.send(str);
@@ -117,16 +237,14 @@ app.get('/show/:id', async (req: Request, res: Response) => {
 
 });
 
-// app.get('/show', (req: Request, res: Response) => {
-//
-// });
-
 app.get('/', async (req: Request, res: Response) => {
+
+    let loggedIn: boolean = req.cookies != undefined && req.cookies.uid != undefined;
 
     let pTests: PurityTest[] | null = await dbHandler.getTests(10, 0);
 
     if (pTests)
-        ejs.renderFile(getView('index'), {test_list: pTests}, {},
+        ejs.renderFile(getView('index'), {test_list: pTests, loggedIn: loggedIn}, {},
             (err: Error, str: string) => {
                 if (err) {
                     console.log(err.name + ": " + err.message);
@@ -134,7 +252,7 @@ app.get('/', async (req: Request, res: Response) => {
                 res.send(str);
             });
     else
-        ejs.renderFile(getView('index'), {test_list: undefined}, {},
+        ejs.renderFile(getView('index'), {test_list: undefined, loggedIn: loggedIn}, {},
             (err: Error, str: string) => {
                 if (err) {
                     console.log(err.name + ": " + err.message);
@@ -151,6 +269,25 @@ app.get('/*', (req: Request, res: Response) => {
         });
 })
 
-app.listen(process.env.PORT || 3000, () => {
-    console.log("Listening on port: " + (process.env.PORT || 3000));
+// @ts-ignore
+let attemptClose = async (options, exitCode) => {
+    let success = await dbHandler.disconnect();
+    console.log(success ? "closed connection" : "couldn't close connection");
+    if (options.exit) process.exit();
+};
+
+process.on("exit", attemptClose.bind(null, {exit: true}));
+
+process.on("SIGINT", attemptClose.bind(null, {exit: true}));
+
+process.on("SIGUSR1", attemptClose.bind(null, {exit: true}));
+process.on("SIGUSR2", attemptClose.bind(null, {exit: true}));
+
+app.listen(process.env.PORT || 3000, async () => {
+    if (await dbHandler.connect()) {
+        console.log("Listening on port: " + (process.env.PORT || 3000));
+    } else {
+        console.log("DB BROKE;");
+        process.exit();
+    }
 });

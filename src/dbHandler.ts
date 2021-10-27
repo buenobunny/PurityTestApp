@@ -1,45 +1,63 @@
 import {PurityTest} from "./objects/PurityTest";
+import {User} from "./objects/User";
 
-const { MongoClient } = require('mongodb');
+const { MongoClient, Db } = require('mongodb');
 
 const uri = process.env.DB_CONNECT;
 
 export class DBHandler {
 
     private client: typeof MongoClient;
+    private connection: typeof MongoClient;
+    private db: typeof Db | null;
     constructor() {
         this.client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+        this.db = null;
+    }
+
+    async connect(): Promise<boolean> {
+        this.connection = await this.client.connect();
+        if (this.connection) {
+            this.db = this.connection.db("PurityTests");
+            return (this.db != null);
+        } else {
+            return false;
+        }
+    }
+
+    async disconnect(): Promise<boolean> {
+        return await this.connection.close();
     }
 
     async getTests(num: number, start: number): Promise<PurityTest[] | null> {
         try {
-            let connection = await this.client.connect();
+            if (this.db != null) {
+                const tests = this.db.collection("Tests");
 
-            const db = connection.db("PurityTests");
-            const tests = db.collection("Tests");
+                const cursor = await tests.find({ views: { $gt: 0 }},
+                    {sort: {likes: -1, views: -1}});
 
-            const cursor = await tests.find({ views: { $gt: 0 }},
-                {sort: {likes: -1, views: -1}});
-
-            let i: number = 0;
-            const toReturn: PurityTest[] = [];
-            while (i < start && !cursor.closed && cursor.hasNext) {
-                await cursor.next();
-                i++;
-            }
-            i = 0;
-            while (i < num && !cursor.closed && cursor.hasNext) {
-                let data = await cursor.next();
-                if (data != null) {
-                    let p: PurityTest | null = PurityTest.deserialize(data);
-                    if (p != null) {
-                        toReturn.push(p);
-                    }
+                let i: number = 0;
+                const toReturn: PurityTest[] = [];
+                while (i < start && !cursor.closed && cursor.hasNext) {
+                    await cursor.next();
+                    i++;
                 }
-                i++;
+                i = 0;
+                while (i < num && !cursor.closed && cursor.hasNext) {
+                    let data = await cursor.next();
+                    if (data != null) {
+                        let p: PurityTest | null = PurityTest.deserialize(data);
+                        if (p != null) {
+                            toReturn.push(p);
+                        }
+                    }
+                    i++;
+                }
+                return toReturn;
+            } else {
+                return null;
             }
-            await connection.close();
-            return toReturn;
         } catch(e) {
             console.log(e);
             return null;
@@ -48,16 +66,16 @@ export class DBHandler {
 
     async checkAlreadyExists(easyId: string): Promise<boolean> {
         try {
-            let conn = await this.client.connect();
+            if (this.db != null) {
+                const tests = this.db.collection("Tests");
 
-            const db = conn.db("PurityTests");
-            const tests = db.collection("Tests");
+                const query = { easyId: easyId };
+                const check = await tests.findOne(query);
 
-            const query = { easyId: easyId };
-            const check = await tests.findOne(query);
-            await conn.close();
-
-            return check != null;
+                return check != null;
+            } else {
+                return false;
+            }
         } catch (e) {
             return false;
         }
@@ -65,21 +83,20 @@ export class DBHandler {
 
     async addTest(test: PurityTest): Promise<boolean> {
         try {
-            let conn = await this.client.connect();
+            if (this.db != null) {
+                const tests = this.db.collection("Tests");
 
-            const db = conn.db("PurityTests");
-            const tests = db.collection("Tests");
+                const query = {easyId: test.easyId};
+                const check = await tests.findOne(query);
+                if (check) {
+                    return false;
+                }
 
-            const query = { easyId: test.easyId };
-            const check = await tests.findOne(query);
-            if (check) {
+                const result = await tests.insertOne(test.serialize());
+                return result.acknowledged;
+            } else {
                 return false;
             }
-
-            const result = await tests.insertOne(test.serialize());
-
-            await conn.close();
-            return result.acknowledged;
         } catch (e) {
             return false;
         }
@@ -88,17 +105,15 @@ export class DBHandler {
     async findTest(easyId: string): Promise<PurityTest | null> {
 
         try {
-            let conn = await this.client.connect();
+            if (this.db != null) {
+                const tests = this.db.collection("Tests");
 
-            const db = conn.db("PurityTests");
-            const tests = db.collection("Tests");
+                const query = {easyId: easyId};
+                const result = await tests.findOne(query);
 
-            const query = {easyId: easyId};
-            const result = await tests.findOne(query);
-            await conn.close();
-
-            if (result) {
-                return PurityTest.deserialize(result);
+                if (result) {
+                    return PurityTest.deserialize(result);
+                }
             }
             return null;
         } catch (e) {
@@ -109,23 +124,23 @@ export class DBHandler {
 
     async updateTest(pt: PurityTest): Promise<boolean> {
         try {
-            let conn = await this.client.connect();
-            const database = this.client.db("PurityTests");
-            const tests = database.collection("Tests");
-            const filter = { easyId: pt.easyId };
-            const options = { upsert: true };
-            const updateDoc = {
-                $set: {
-                    likes: pt.likes,
-                    views: pt.views,
-                    preText: pt.preText,
-                    postText: pt.postText
-                },
-            };
-            const result = await tests.updateOne(filter, updateDoc, options);
+            if (this.db != null) {
+                const tests = this.db.collection("Tests");
+                const filter = {easyId: pt.easyId};
+                const options = {upsert: true};
+                const updateDoc = {
+                    $set: {
+                        likes: pt.likes,
+                        views: pt.views,
+                        preText: pt.preText,
+                        postText: pt.postText
+                    },
+                };
+                const result = await tests.updateOne(filter, updateDoc, options);
 
-            await conn.close();
-            return result.matchedCount == 1;
+                return result.matchedCount == 1;
+            }
+            return false;
         } catch (e) {
             return false;
         }
@@ -134,20 +149,78 @@ export class DBHandler {
     async findAndViewTest(easyId: string): Promise<PurityTest | null> {
 
         try {
-            let pt = await this.findTest(easyId);
+            if (this.db != null) {
+                let pt = await this.findTest(easyId);
 
-            if (pt) {
-                pt.views++;
-                let updated = await this.updateTest(pt);
-                return pt;
-            } else {
-                return null;
+                if (pt) {
+                    pt.views++;
+                    let updated = await this.updateTest(pt);
+                    return pt;
+                }
             }
-
+            return null;
         } catch(e) {
             return null;
         }
 
+    }
+
+    async checkUserExists(username: string, email: string): Promise<boolean> {
+        try {
+            if (this.db != null) {
+                const users = this.db.collection("Users");
+
+                const queryUser = {username: username};
+                const checkUser = await users.findOne(queryUser);
+                if (checkUser == null) {
+                    const queryEmail = {email: email};
+                    const checkEmail = await users.findOne(queryEmail);
+                    return !(checkEmail == null);
+                } else {
+                    return true;
+                }
+            }
+
+            return true;
+        } catch(e) {
+            return true;
+        }
+    }
+
+    async createUser(user: User): Promise<User | null> {
+        try {
+            if (this.db != null) {
+
+                const users = this.db.collection("Users");
+
+                if (!await this.checkUserExists(user.username, user.email)) {
+                    const result = await users.insertOne(user.serialize());
+                    if (result.acknowledged)
+                        user.uid = result.insertedId;
+                    else
+                        return null;
+                    return user;
+                }
+
+            }
+
+            return null;
+        } catch(e) {
+            return null;
+        }
+    }
+
+    async getUser(username: string): Promise<User | null>  {
+        try {
+            if (this.db != null) {
+                const users = this.db.collection("Users");
+                return users.findOne({username: username});
+            } else {
+                return null;
+            }
+        } catch (e) {
+            return null;
+        }
     }
 
 }
