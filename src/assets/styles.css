@@ -7,11 +7,12 @@ body {
 
 * {
     font-family: 'Inter', sans-serif;
-    --main-color: #7AE7C7;
-    --main-dark: #75BBA7;
-    --accent: #6C809A;
-    --accent-dark: #4C6085;
-    --background: #645244;
+    --main-color: #FF5A5f;
+    --main-dark: #f49390;
+    --accent: #2f1000; /* #2f1000 #621b00*/
+    --accent-dark: #621b00;
+    --background: #071013;
+    --background-white: #f5d7e3;
 }
 
 #container {
@@ -56,6 +57,7 @@ a {
 #navbar h2 {
     float: right;
     margin: 0;
+    margin-left: 10px;
     padding: 10px;
     color: white;
     text-decoration: none;
@@ -109,3 +111,72 @@ input[type=text]:focus, input[type=number]:focus {
 
 .table-cell { display:table-cell;
 padding: 8px;}
+
+#loginContainer {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    background-color: var(--main-color);
+}
+.banner {
+    display: inline-block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: auto;
+    text-align: center;
+    z-index: 20;
+    background-color: var(--background);
+    color: white;
+    margin: 0;
+    padding: 20px 0;
+    font-weight: 800;
+}
+#loginForm {
+    position: absolute;
+    width: 40%;
+    height: 60%;
+    top: 15%;
+    right: 30%;
+    background-color: white;
+    box-shadow: 0 0 4px 1px var(--accent-dark);
+}
+
+#loginInner {
+    position: absolute;
+    height: auto;
+    width: 80%;
+    margin: 0 10%;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+input:not([type='checkbox']) {
+    display: inline-block;
+    width: 100%;
+    margin: 15px 0;
+    border: 1px;
+    box-shadow: 0 0 1px 1px var(--accent-dark);
+    background-color: white;
+    height: 40px;
+}
+
+input[type='submit'] {
+
+    background-color: var(--accent-dark);
+}
+
+form h2 {
+    display: inline-block;
+    margin: 15px 0;
+    color: var(--accent-dark);
+}
+
+form a {
+    float: right;
+    color: var(--accent-dark);
+    text-decoration: underline;
+    padding-left: 10px;
+}
+

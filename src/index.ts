@@ -45,7 +45,7 @@ app.get('/new', (req: Request, res: Response) => {
     }
 
     ejs.renderFile(getView('new'),{
-        title: "New Test"
+        title: "New Test", loggedIn: true
         }, {},
         (err: Error, str: string) => {
         res.send(str);
@@ -235,6 +235,32 @@ app.get('/show/:id', async (req: Request, res: Response) => {
         ejs.renderFile(getStandard('404'), {}, {}, (err: Error, str: string) => {res.send(str);});
     }
 
+});
+
+app.get('/all/:page', async (req: Request, res: Response) => {
+    let start: number = parseInt(req.params["page"]) * 25;
+    let tests = await dbHandler.getTests(25, start, "likes&views");
+
+    if (tests)
+        ejs.renderFile(getView('all'), {test_list: tests,
+            loggedIn: req.cookies != undefined && req.cookies.uid != undefined},
+            (err: Error, str: string) => {
+                res.send(str);
+            });
+    else
+        ejs.renderFile(getStandard('404'), {}, {}, (err: Error, str: string) => {res.send(str);});
+});
+
+app.get('/all', async (req: Request, res: Response) => {
+    let tests = await dbHandler.getTests(25, 0);
+    if (tests)
+        ejs.renderFile(getView('all'), {test_list: tests,
+                loggedIn: req.cookies != undefined && req.cookies.uid != undefined},
+            (err: Error, str: string) => {
+                res.send(str);
+            });
+    else
+        ejs.renderFile(getStandard('404'), {}, {}, (err: Error, str: string) => {res.send(str);});
 });
 
 app.get('/', async (req: Request, res: Response) => {

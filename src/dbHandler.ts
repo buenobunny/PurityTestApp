@@ -29,13 +29,18 @@ export class DBHandler {
         return await this.connection.close();
     }
 
-    async getTests(num: number, start: number): Promise<PurityTest[] | null> {
+    async getTests(num: number, start: number, sort?: string): Promise<PurityTest[] | null> {
         try {
             if (this.db != null) {
                 const tests = this.db.collection("Tests");
 
-                const cursor = await tests.find({ views: { $gt: 0 }},
-                    {sort: {likes: -1, views: -1}});
+                let cursor = null;
+                if (sort != null) {
+                    cursor = await tests.find({ views: { $gt: 0 }},
+                        {sort: {likes: -1, views: -1}});
+                } else {
+                    cursor = await tests.find();
+                }
 
                 let i: number = 0;
                 const toReturn: PurityTest[] = [];

@@ -1,0 +1,6 @@
+<%- include('partials/header.ejs', {title: undefined}); %>
+    <% if (test_list) { %>
+        <h2>All Tests</h2>
+        <%- include('partials/testlist.ejs', {list: test_list}); %>
+    <% } %>
+<%- include('partials/footer.ejs'); %>
