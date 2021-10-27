@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "build": "node build.js && tsc",
-    "start": "npm run build && node ./dist/index.js",
+    "dev": "npm run build && node ./dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prod_server": "npm run build && pm2 start ./dist/index.js --name ptapp",
+    "prod_server": "npm install && npm run build && pm2 start ./dist/index.js --name ptapp",
     "restart_prod": "pm2 stop ptapp && pm2 delete ptapp && npm run prod_server"
   },
   "repository": {
