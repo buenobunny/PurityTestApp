@@ -238,8 +238,12 @@ app.get('/show/:id', async (req: Request, res: Response) => {
 });
 
 app.get('/all/:page', async (req: Request, res: Response) => {
+    let sort: string | undefined = undefined;
+    // if (req.query != undefined && req.query.sort != undefined) {
+    //     sort = req.query.sort;
+    // }
     let start: number = parseInt(req.params["page"]) * 25;
-    let tests = await dbHandler.getTests(25, start, "likes&views");
+    let tests = await dbHandler.getTests(25, start, sort);
 
     if (tests)
         ejs.renderFile(getView('all'), {test_list: tests,
@@ -297,9 +301,14 @@ app.get('/*', (req: Request, res: Response) => {
 
 // @ts-ignore
 let attemptClose = async (options, exitCode) => {
-    let success = await dbHandler.disconnect();
-    console.log(success ? "closed connection" : "couldn't close connection");
-    if (options.exit) process.exit();
+    let success = dbHandler.disconnect().then((result) => {
+        console.log(result ? "closed connection" : "couldn't close");
+    }).catch((err: Error) => {
+        console.log("couldn't close connection");
+        console.log(err.name + ": " + err.message);
+    }).finally(() => {
+        if (options.exit) process.exit();
+    });
 };
 
 process.on("exit", attemptClose.bind(null, {exit: true}));

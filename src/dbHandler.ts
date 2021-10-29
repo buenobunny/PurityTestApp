@@ -16,17 +16,27 @@ export class DBHandler {
     }
 
     async connect(): Promise<boolean> {
-        this.connection = await this.client.connect();
-        if (this.connection) {
-            this.db = this.connection.db("PurityTests");
-            return (this.db != null);
-        } else {
+        try {
+            this.connection = await this.client.connect();
+            if (this.connection) {
+                this.db = this.connection.db("PurityTests");
+                return (this.db != null);
+            } else {
+                return false;
+            }
+        } catch(e) {
+            console.log(e);
             return false;
         }
     }
 
     async disconnect(): Promise<boolean> {
-        return await this.connection.close();
+        try {
+            return await this.client.close();
+        } catch(e) {
+            console.log(e);
+            return false;
+        }
     }
 
     async getTests(num: number, start: number, sort?: string): Promise<PurityTest[] | null> {

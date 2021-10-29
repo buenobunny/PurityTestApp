@@ -6,20 +6,20 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-<% if (msg) { %>
-    <p class="banner">Something went wrong. Try again.</p>
-<% } %>
-<div id="loginContainer">
-    <form id="loginForm" action="/signup" method="POST">
-        <div id="loginInner">
-            <h2>Sign up</h2>
-            <input type="text" name="user" placeholder="Username" value=""/>
-            <input type="text" name="email" placeholder="Email" value=""/>
-            <input type="password" name="password" placeholder="Password" value=""/>
-            <input type="submit" name="submit" value="Sign up"/>
-            <a href="/login">Login</a><a href="/">Go Home</a>
-        </div>
-    </form>
-</div>
+    <% if (msg) { %>
+        <p class="banner">Something went wrong. Try again.</p>
+    <% } %>
+    <div id="loginContainer" class="gradient-background">
+        <form id="loginForm" action="/signup" method="POST">
+            <div id="loginInner">
+                <h2>Sign up</h2>
+                <input type="text" name="user" placeholder="Username" value=""/>
+                <input type="text" name="email" placeholder="Email" value=""/>
+                <input type="password" name="password" placeholder="Password" value=""/>
+                <input type="submit" name="submit" value="Sign up"/>
+                <a href="/login">Login</a><a href="/">Go Home</a>
+            </div>
+        </form>
+    </div>
 </body>
 </html>

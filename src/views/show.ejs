@@ -20,7 +20,7 @@
 
             <p><%= totalQuestions %>. </p>
 
-            <input type="checkbox" name="questionAnswer[]" /><p> <%= question %></p><br><br>
+            <input type="checkbox" name="questionAnswer[]" id="question<%= totalQuestions %>" /><label for="question<%= totalQuestions %>"> <%= question %></label><br><br>
         <% }); %>
         <input type="hidden" name="questionAnswer[]" value="1"/>
         <input type="hidden" name="title" value="<%= title %>"/>
