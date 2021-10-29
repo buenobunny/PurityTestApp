@@ -19,7 +19,7 @@ export class DBHandler {
         try {
             this.connection = await this.client.connect();
             if (this.connection) {
-                this.db = this.connection.db("PurityTests");
+                this.db = this.connection.db(process.env.DB_NAME);
                 return (this.db != null);
             } else {
                 return false;
