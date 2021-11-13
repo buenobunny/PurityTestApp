@@ -4,6 +4,12 @@ import express from 'express';
 import {Request, Response} from 'express';
 const emailValidator = require('email-validator');
 
+const cookieOptions = {
+    maxAge: 10000,
+    secure: true,
+    httpOnly: true
+};
+
 export class UserRouter {
 
     private dbHandler: DBHandler;
@@ -27,7 +33,7 @@ export class UserRouter {
         if (user != null) {
             let hashedPass = User.hashPass(req.body.password);
             if (hashedPass == user.passwordHash) {
-                res.cookie("uid", user.uid).redirect('/');
+                res.cookie("uid", user.uid?.toHexString()).redirect('/');
                 return;
             }
         }
@@ -53,7 +59,7 @@ export class UserRouter {
         }
 
         let hashedPass = User.hashPass(req.body.password);
-        let user: User = new User(req.body.user, req.body.email, hashedPass, new Set<string>());
+        let user: User = new User(req.body.user, req.body.email, hashedPass);
 
         let createdUser = await this.dbHandler.createUser(user);
 

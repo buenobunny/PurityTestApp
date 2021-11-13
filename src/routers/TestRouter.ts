@@ -42,4 +42,54 @@ export class TestRouter {
         }
     }
 
+    likeTest = async (req: Request, res: Response) => {
+        if (req.body == undefined || req.body.testId == undefined) {
+            res.status(400).send("bruh");
+            return;
+        }
+
+        if (req.cookies.uid == undefined) {
+            res.status(403).send("not logged in 1 ");
+            return;
+        }
+
+        let user: User | null = await this.dbHandler.getUser(req.cookies.uid);
+        let test: PurityTest | null = await this.dbHandler.findTest(req.body.testId);
+
+        if (user != null && test != null) {
+
+            if (req.cookies.uid !== user.uid?.toHexString()) {
+                res.status(403).send("not logged in 2");
+                return;
+            }
+
+            let liked = await this.dbHandler.findLike(user.username, req.body.testId);
+
+            if (liked) {
+                test.likes--;
+                let success = await this.dbHandler.deleteLike(user.username, req.body.testId);
+                if (!success) {
+                    res.status(500).send("couldn't delete");
+                    return;
+                }
+            } else {
+                test.likes++;
+                let success = await this.dbHandler.addLike(user.username, req.body.testId);
+                if (!success) {
+                    res.status(500).send("couldn't add");
+                    return;
+                }
+            }
+            let updatedTest = await this.dbHandler.updateTest(test);
+            if (!updatedTest) {
+                res.status(500).send("test not updated");
+                return;
+            }
+            res.status(200).send({likes: test.likes, liked: !liked});
+        } else {
+            res.status(500).send("general break");
+        }
+
+    }
+
 }

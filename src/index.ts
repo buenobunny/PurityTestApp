@@ -41,6 +41,10 @@ function getStandard(standard: string): string {
     return getView('/standards/' + standard);
 }
 
+function checkLoggedIn(req: Request) {
+    return !(req.cookies == undefined || req.cookies.uid == undefined);
+}
+
 app.get('/new', (req: Request, res: Response) => {
 
     if (req.cookies == undefined || req.cookies.uid == undefined) {
@@ -104,9 +108,11 @@ app.post('/validateId', async (req: Request, res: Response) => {
 
 app.post('/create', testRoutes.createTest);
 
+app.post('/likeTest', testRoutes.likeTest);
+
 app.post('/results', (req: Request, res: Response) => {
 
-    if (!req.body || !req.body.totalQuestions || !req.body["questionAnswer[]"] || !req.body.postText) {
+    if (!req.body || !req.body.totalQuestions || !req.body["questionAnswer[]"] || req.body.postText == undefined) {
         ejs.renderFile(getStandard("404"), {}, {}, (err: Error, str: string) => {
             res.status(404);
             res.send(str);
@@ -121,8 +127,14 @@ app.post('/results', (req: Request, res: Response) => {
     ejs.renderFile(getView('results'), {
         title: "Results",
         percentage: resultPercentage,
-        postText: req.body.postText
+        postText: req.body.postText,
+        loggedIn: checkLoggedIn(req)
     }, {}, (err: Error, str: string) => {
+        if (err) {
+            console.log(err.name + ": " + err.message);
+            res.send(err);
+            return;
+        }
         res.send(str);
     });
 });
@@ -131,14 +143,24 @@ app.get('/show/:id', async (req: Request, res: Response) => {
     let id: string = req.params["id"];
     let test = await dbHandler.findAndViewTest(id);
 
+    if (test == null) {
+        ejs.renderFile(getStandard('404'), {}, {}, (err: Error, str: string) => {res.send(str);});
+        return;
+    }
+
+    let loggedIn: boolean = req.cookies != undefined && req.cookies.uid != undefined;
+    let user: User | null = null;
+    if (loggedIn) {
+        user = await dbHandler.getUser(req.cookies.uid);
+    }
+    let liked: boolean = (user != null) ? await dbHandler.findLike(user.username, id) : false;
+
     if (test) {
         ejs.renderFile(getView('show'), {
-            title: test.title,
-            questions: test.questions,
-            views: test.views,
-            preText: test.preText,
-            postText: test.postText,
-            loggedIn: req.cookies != undefined && req.cookies.uid != undefined
+            test: test,
+            loggedIn: loggedIn,
+            userLiked: liked,
+            username: user && user.uid != null ? user.uid : undefined
         }, {}, (err: Error, str: string) => {
             if (err) {
                 res.send(err.name + ": " + err.message);

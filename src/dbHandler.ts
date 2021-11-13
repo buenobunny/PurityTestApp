@@ -1,7 +1,7 @@
 import {PurityTest} from "./objects/PurityTest";
 import {User} from "./objects/User";
 
-const { MongoClient, Db } = require('mongodb');
+const { MongoClient, Db, ObjectId } = require('mongodb');
 
 const uri = process.env.DB_CONNECT;
 
@@ -210,11 +210,11 @@ export class DBHandler {
 
                 if (!await this.checkUserExists(user.username, user.email)) {
                     const result = await users.insertOne(user.serialize());
-                    if (result.acknowledged)
+                    if (result.acknowledged) {
                         user.uid = result.insertedId;
-                    else
-                        return null;
-                    return user;
+                        return user;
+                    }
+                    return null;
                 }
 
             }
@@ -225,16 +225,101 @@ export class DBHandler {
         }
     }
 
-    async getUser(username: string): Promise<User | null>  {
+    async getUser(uid: string): Promise<User | null>  {
         try {
             if (this.db != null) {
                 const users = this.db.collection("Users");
-                return users.findOne({username: username});
+                let query = {_id: ObjectId(uid)};
+                let result = await users.findOne(query);
+                if (result) {
+                    return User.deserialize(result);
+                }
+                return null;
             } else {
                 return null;
             }
         } catch (e) {
             return null;
+        }
+    }
+
+    async updateUser(user: User) : Promise<boolean> {
+        try {
+            if (this.db != null) {
+                const users = this.db.collection("Users");
+                const filter = {_id: user.uid};
+                const options = {upsert: true};
+                const serializedUser = user.serialize();
+                const updateDoc = {
+                    $set: {
+                        likes: serializedUser.likes
+                    },
+                };
+                const result = await users.updateOne(filter, updateDoc, options);
+
+                return result.matchedCount == 1;
+            }
+            return false;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    async findLike(username: string, testId: string): Promise<boolean> {
+        try {
+            if (this.db != null) {
+                const likes = this.db.collection("UserLikes");
+                const filter = {
+                    username: username,
+                    testId: testId
+                }
+                let result = await likes.findOne(filter);
+                if (result) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    async deleteLike(username: string, testId: string): Promise<boolean> {
+        try {
+            if (this.db != null) {
+                const likes = this.db.collection("UserLikes");
+                const filter = {
+                    username: username,
+                    testId: testId
+                }
+                let result = await likes.deleteOne(filter);
+                if (result.deletedCount == 1) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (e) {
+            return false;
+        }
+    }
+
+
+    async addLike(username: string, testId: string): Promise<boolean> {
+        try {
+            if (this.db != null) {
+                const likes = this.db.collection("UserLikes");
+                const filter = {
+                    username: username,
+                    testId: testId
+                }
+                let result = await likes.insertOne(filter);
+                if (result.acknowledged) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (e) {
+            return false;
         }
     }
 

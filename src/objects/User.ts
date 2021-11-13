@@ -1,5 +1,6 @@
 import {Set} from "typescript";
 import {PurityTest} from "./PurityTest";
+import {ObjectId} from 'mongodb';
 
 const crypto = require('crypto');
 
@@ -7,17 +8,15 @@ export class User {
 
     static arrDelim: string = "%";
 
-    username: string;
-    email: string;
-    passwordHash: string;
-    likes: Set<string>;
-    uid: string | null;
+    readonly username: string;
+    readonly email: string;
+    readonly passwordHash: string;
+    public uid: ObjectId | null;
 
-    constructor(username: string, email: string, passwordHash: string, likes: Set<string>, uid?: string) {
+    constructor(username: string, email: string, passwordHash: string, uid?: ObjectId) {
         this.username = username;
         this.email = email;
         this.passwordHash = passwordHash;
-        this.likes = likes;
         if (uid) {
             this.uid = uid;
         } else {
@@ -26,17 +25,11 @@ export class User {
     }
 
     serialize(): any {
-        let arrayLikes: string[] = [];
-        for (let like in this.likes.values()) {
-            arrayLikes.push(like);
-        }
-        let serializedLikes = arrayLikes.join(User.arrDelim);
         return {
             _id: this.uid,
             username: this.username,
             email: this.email,
-            passwordHash: this.passwordHash,
-            likes: serializedLikes
+            passwordHash: this.passwordHash
         }
     }
 
@@ -44,13 +37,10 @@ export class User {
 
         if (data._id == undefined || data.username == undefined
             || data.email == undefined || data.passwordHash == undefined || data.likes == undefined) {
-            console.log("User:");
-            console.log(data);
             return null;
         }
 
-
-        return null;
+        return new User(data.username, data.email, data.passwordHash, data._id);
     }
 
     static hashPass(password: string): string {
