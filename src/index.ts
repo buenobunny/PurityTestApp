@@ -267,6 +267,8 @@ process.on("SIGUSR2", attemptClose.bind(null, {exit: true}));
 app.listen(process.env.PORT || 3000, async () => {
     if (await dbHandler.connect()) {
         console.log("Listening on port: " + (process.env.PORT || 3000));
+        // @ts-ignore
+        process.send('ready');
     } else {
         console.log("DB BROKE;");
         process.exit();
