@@ -226,6 +226,7 @@ export class DBHandler {
     }
 
     async getUser(uid: string): Promise<User | null>  {
+        console.log(uid);
         try {
             if (this.db != null) {
                 const users = this.db.collection("Users");

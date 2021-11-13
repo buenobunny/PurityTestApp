@@ -56,7 +56,6 @@ export class TestRouter {
         let user: User | null = await this.dbHandler.getUser(req.cookies.uid);
         console.log(user);
         let test: PurityTest | null = await this.dbHandler.findTest(req.body.testId);
-        console.log(test);
 
         if (user != null && test != null) {
 
