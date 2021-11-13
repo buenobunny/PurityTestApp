@@ -36,7 +36,7 @@ export class User {
     static deserialize(data: any): User | null {
 
         if (data._id == undefined || data.username == undefined
-            || data.email == undefined || data.passwordHash == undefined || data.likes == undefined) {
+            || data.email == undefined || data.passwordHash == undefined) {
             return null;
         }
 
