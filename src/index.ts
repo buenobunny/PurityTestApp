@@ -45,6 +45,15 @@ function checkLoggedIn(req: Request) {
     return !(req.cookies == undefined || req.cookies.uid == undefined);
 }
 
+app.use((req: Request, res: Response, next) => {
+
+    if (req.cookies != undefined && req.cookies.uid === 'undefined') {
+        res.clearCookie('uid');
+    }
+
+    next();
+});
+
 app.get('/new', (req: Request, res: Response) => {
 
     if (req.cookies == undefined || req.cookies.uid == undefined) {
