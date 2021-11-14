@@ -110,7 +110,7 @@ input[type=text]:focus, input[type=number]:focus {
 }
 
 .table-cell { display:table-cell;
-padding: 8px;}
+    padding: 8px;}
 
 #loginContainer {
     position: relative;
@@ -152,7 +152,7 @@ padding: 8px;}
     transform: translateY(-50%);
 }
 
-input:not([type='checkbox']) {
+input:not([type='checkbox']), textarea {
     display: inline-block;
     width: 100%;
     margin: 15px 0;
@@ -160,6 +160,10 @@ input:not([type='checkbox']) {
     box-shadow: 0 0 1px 1px var(--accent-dark);
     background-color: white;
     height: 40px;
+}
+
+textarea {
+    height: inherit;
 }
 
 input[type='submit'] {
@@ -195,5 +199,318 @@ form a {
     }
     100% {
         background-position: 0% 50%;
+    }
+}
+
+@media (max-width: 1200px) {
+    #navbar h1 {
+        max-width: calc(100% - 50px);
+        display: inline-block;
+    }
+    #navbar-inside {
+        position: relative;
+    }
+    #subElements[show=off] {
+        display: none;
+    }
+    #subElements {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        z-index: 200;
+        background-color: var(--main-color);
+    }
+    #toggle {
+        display: inline-block;
+        float: right;
+        z-index: 201;
+        width: 40px;
+        height: 40px;
+        text-align: center;
+        position: absolute;
+        top: 50%;
+        right: 15%;
+        transform: translateY(-10px);
+    }
+    #toggle i {
+        width: 20px;
+        height:20px;
+        font-size: 20px;
+    }
+    #toggle[show=on] {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+    }
+    #subElements h2 {
+        width: 90%;
+        margin: 10px calc(5% - 10px) !important;
+    }
+    #spacing {
+        display: inline-block;
+        margin-top: 50px !important;
+        min-height: 60px;
+        background: rgba(0,0,0,0) !important;
+    }
+}
+@media (min-width: 1201px) {
+    #subElements {
+        display: inline-block !important;
+        float: right;
+    }
+    #toggle {
+        display: none;
+    }
+    #spacing {
+        display: none;
+    }
+    #likeDiv p, #likeDiv svg {
+        transform: translateY(-20px);
+    }
+}
+
+#likesText {
+    float: right;
+}
+@media (max-width: 1200px) {
+    #likeDiv p {
+        z-index: 100;
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        margin: 0;
+        color: white;
+    }
+    #likeDiv {
+        position: fixed;
+        right: 15px;
+        bottom: 15px;
+        width: 80px;
+        border-radius: 50%;
+        background-color: var(--main-dark);
+    }
+    #likeDiv svg {
+        position: relative;
+        width: 100%;
+        top: 5px;
+    }
+}
+
+svg {
+    cursor: pointer;
+    overflow: visible;
+    width: 50px;
+    float: right;
+}
+svg #heart {
+    transform-origin: center;
+    animation: animateHeartOut 0.3s linear forwards;
+}
+svg #main-circ {
+    transform-origin: 29.5px 29.5px;
+}
+
+#liked {
+    display: none;
+}
+
+#liked:checked + label svg #heart {
+    transform: scale(0.2);
+    fill: #E2264D;
+    animation: animateHeart 0.3s linear forwards 0.25s;
+}
+#liked:checked + label svg #main-circ {
+    transition: all 2s;
+    animation: animateCircle 0.3s linear forwards;
+    opacity: 1;
+}
+#liked:checked + label svg #grp1 {
+    opacity: 1;
+    transition: 0.1s all 0.3s;
+}
+#liked:checked + label svg #grp1 #oval1 {
+    transform: scale(0) translate(0, -30px);
+    transform-origin: 0 0 0;
+    transition: 0.5s transform 0.3s;
+}
+#liked:checked + label svg #grp1 #oval2 {
+    transform: scale(0) translate(10px, -50px);
+    transform-origin: 0 0 0;
+    transition: 1.5s transform 0.3s;
+}
+#liked:checked + label svg #grp2 {
+    opacity: 1;
+    transition: 0.1s all 0.3s;
+}
+#liked:checked + label svg #grp2 #oval1 {
+    transform: scale(0) translate(30px, -15px);
+    transform-origin: 0 0 0;
+    transition: 0.5s transform 0.3s;
+}
+#liked:checked + label svg #grp2 #oval2 {
+    transform: scale(0) translate(60px, -15px);
+    transform-origin: 0 0 0;
+    transition: 1.5s transform 0.3s;
+}
+#liked:checked + label svg #grp3 {
+    opacity: 1;
+    transition: 0.1s all 0.3s;
+}
+#liked:checked + label svg #grp3 #oval1 {
+    transform: scale(0) translate(30px, 0px);
+    transform-origin: 0 0 0;
+    transition: 0.5s transform 0.3s;
+}
+#liked:checked + label svg #grp3 #oval2 {
+    transform: scale(0) translate(60px, 10px);
+    transform-origin: 0 0 0;
+    transition: 1.5s transform 0.3s;
+}
+#liked:checked + label svg #grp4 {
+    opacity: 1;
+    transition: 0.1s all 0.3s;
+}
+#liked:checked + label svg #grp4 #oval1 {
+    transform: scale(0) translate(30px, 15px);
+    transform-origin: 0 0 0;
+    transition: 0.5s transform 0.3s;
+}
+#liked:checked + label svg #grp4 #oval2 {
+    transform: scale(0) translate(40px, 50px);
+    transform-origin: 0 0 0;
+    transition: 1.5s transform 0.3s;
+}
+#liked:checked + label svg #grp5 {
+    opacity: 1;
+    transition: 0.1s all 0.3s;
+}
+#liked:checked + label svg #grp5 #oval1 {
+    transform: scale(0) translate(-10px, 20px);
+    transform-origin: 0 0 0;
+    transition: 0.5s transform 0.3s;
+}
+#liked:checked + label svg #grp5 #oval2 {
+    transform: scale(0) translate(-60px, 30px);
+    transform-origin: 0 0 0;
+    transition: 1.5s transform 0.3s;
+}
+#liked:checked + label svg #grp6 {
+    opacity: 1;
+    transition: 0.1s all 0.3s;
+}
+#liked:checked + label svg #grp6 #oval1 {
+    transform: scale(0) translate(-30px, 0px);
+    transform-origin: 0 0 0;
+    transition: 0.5s transform 0.3s;
+}
+#liked:checked + label svg #grp6 #oval2 {
+    transform: scale(0) translate(-60px, -5px);
+    transform-origin: 0 0 0;
+    transition: 1.5s transform 0.3s;
+}
+#liked:checked + label svg #grp7 {
+    opacity: 1;
+    transition: 0.1s all 0.3s;
+}
+#liked:checked + label svg #grp7 #oval1 {
+    transform: scale(0) translate(-30px, -15px);
+    transform-origin: 0 0 0;
+    transition: 0.5s transform 0.3s;
+}
+#liked:checked + label svg #grp7 #oval2 {
+    transform: scale(0) translate(-55px, -30px);
+    transform-origin: 0 0 0;
+    transition: 1.5s transform 0.3s;
+}
+#liked:checked + label svg #grp2 {
+    opacity: 1;
+    transition: 0.1s opacity 0.3s;
+}
+#liked:checked + label svg #grp3 {
+    opacity: 1;
+    transition: 0.1s opacity 0.3s;
+}
+#liked:checked + label svg #grp4 {
+    opacity: 1;
+    transition: 0.1s opacity 0.3s;
+}
+#liked:checked + label svg #grp5 {
+    opacity: 1;
+    transition: 0.1s opacity 0.3s;
+}
+#liked:checked + label svg #grp6 {
+    opacity: 1;
+    transition: 0.1s opacity 0.3s;
+}
+#liked:checked + label svg #grp7 {
+    opacity: 1;
+    transition: 0.1s opacity 0.3s;
+}
+
+@keyframes animateCircle {
+    40% {
+        transform: scale(10);
+        opacity: 1;
+        fill: #DD4688;
+    }
+    55% {
+        transform: scale(11);
+        opacity: 1;
+        fill: #D46ABF;
+    }
+    65% {
+        transform: scale(12);
+        opacity: 1;
+        fill: #CC8EF5;
+    }
+    75% {
+        transform: scale(13);
+        opacity: 1;
+        fill: transparent;
+        stroke: #CC8EF5;
+        stroke-width: 0.5;
+    }
+    85% {
+        transform: scale(17);
+        opacity: 1;
+        fill: transparent;
+        stroke: #CC8EF5;
+        stroke-width: 0.2;
+    }
+    95% {
+        transform: scale(18);
+        opacity: 1;
+        fill: transparent;
+        stroke: #CC8EF5;
+        stroke-width: 0.1;
+    }
+    100% {
+        transform: scale(19);
+        opacity: 1;
+        fill: transparent;
+        stroke: #CC8EF5;
+        stroke-width: 0;
+    }
+}
+@keyframes animateHeart {
+    0% {
+        transform: scale(0.2);
+    }
+    40% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+@keyframes animateHeartOut {
+    0% {
+        transform: scale(1.4);
+    }
+    100% {
+        transform: scale(1);
     }
 }

@@ -7,7 +7,7 @@
     #labQuestions {
         display: inline;
     }
-    input[type=textarea], input[type=text] {
+    input[type=textarea], input[type=text], textarea {
         margin-bottom: 20px;
     }
     #questionsHeader {
@@ -23,137 +23,131 @@
     small {
         display: block;
     }
+    hr {
+        border-top: 4px solid var(--main-dark);
+    }
+    #actualQuestions p {
+        margin-bottom: 0px;
+    }
 </style>
-    <div id="questionsHeader">
-        <label id="labQuestions" for="numberOfQuestions"><b>Number of Questions:</b></label>
-        <input type="number" id="nQuestions" name="nQuestions"/>
-        <button id="filldetails" onclick="addQuestions()">Submit</button>
-        <button id="addOne" onclick="subOne()">Remove One</button>
-        <button id="subOne" onclick="addOne()">Add One</button>
+<label>Instructions</label>
+<p>You can create your very own Purity Test using this form! Please fill out all fields. To add more questions
+    or remove questions, you may enter any number into the following field and press submit or add/remove one by one.
+    Please make sure to fill out all fields or your data may be lost when submitted! We are still working on getting
+    a 'private' and edit function for your tests for easier creation.</p>
+<hr/>
+<div id="questionsHeader">
+    <label id="labQuestions" for="numberOfQuestions"><b>Number of Questions:</b></label>
+    <input type="number" id="nQuestions" name="nQuestions"/>
+    <button id="filldetails" onclick="addQuestions()">Submit</button>
+    <button id="addOne" onclick="subOne()">Remove One</button>
+    <button id="subOne" onclick="addOne()">Add One</button>
+</div>
+<br/>
+<hr/>
+
+<form id="ptgForm" action="/create" method="POST">
+    <label for="Title"><b>Test Title:</b></label>
+    <input type="text" id="title" name="title" placeholder="Title"/>
+    <br/>
+    <label for="Title"><b>Custom Link:</b></label>
+    <input type="text" id="easyId" name="easyId" placeholder="Ex: abcDEF123"/>
+    <br/>
+    <label for="preText"><b>Pre-Text:</b></label>
+    <small>Enter some words the test taker will see before taking the test:</small>
+    <textarea id="preText" name="preText" rows="4" cols="50"></textarea>
+    <br/>
+    <label for="result"><b>Feedback for Test Results:</b></label>
+    <small>Example: You are 75% proficient in English Grammar</small>
+    <small>You are 75%...</small>
+    <textarea id="postText" name="postText" rows="4" cols="50"></textarea>
+    <br/>
+    <hr/>
+    <label>Questions:</label>
+    <div id="actualQuestions">
+
     </div>
+    <br/>
+    <input type="submit" value="Generate Your Test!"/>
+</form>
+<script type='text/javascript'>
+    let nQuestions = 0;
 
-    <form id="ptgForm" action="/create" method="POST">
-        <label for="Title"><b>Your Test Title:</b></label>
-        <input type="text" id="title" name="title"/>
-        <br/>
-        <label for="Title"><b>Custom Link:</b></label>
-        <input type="text" id="easyId" name="easyId"/>
-        <br/>
-        <label for="preText"><b>Pre-Text:</b></label>
-        <small>Enter some words the test taker will see before taking the test:</small>
-        <input type="textarea" id="preText" name="preText" rows="4" cols="50"/>
-        <br/>
-        <label for="result"><b>Feedback for Test Results:</b></label>
-        <small>Example: You are 75% proficient in English Grammar</small>
-        <small>You are 75%...</small>
-        <input type="textarea" id="postText" name="postText" rows="4" cols="50"/>
-        <br/>
-        <label>Questions:</label>
-        <div id="actualQuestions">
-
-        </div>
-        <br/>
-        <input type="submit" value="Generate Your Test!"/>
-    </form>
-    <script type='text/javascript'>
-        let nQuestions = 0;
-
-        $("#easyId").change((e) => {
-            if ($("#easyId").val() !== "") {
-                $.ajax({
-                    url: "/validateId",
-                    type: "POST",
-                    data: {
-                        easyId: $("#easyId").val()
-                    },
-                    success: (res) => {
-                        console.log(res);
-                        if (res === "false") {
-                            $("#easyId").attr("style", "background-color:var(--main-color);");
-                        } else {
-                            $("#easyId").attr("style", "background-color:#ed918c;");
-                        }
-                    }
-                })
-            } else {
-                $("#easyId").css("background-color", "inherit");
-            }
-        });
-
-        function addOne() {
-            var container = document.getElementById("actualQuestions");
-            console.log(container);
-
-            var qContainer = document.createElement("div");
-            qContainer.setAttribute("class", "questionDiv");
-
-            // Create an input element for New Question
-            var newQuestion = document.createElement("input");
-            newQuestion.setAttribute("type", "text");
-            newQuestion.setAttribute("name", "questions[]");
-            newQuestion.setAttribute("placeholder", "New Question");
-
-            qContainer.prepend(newQuestion);
-            qContainer.prepend(document.createTextNode("Question " + (nQuestions + 1) + ": "));
-
-            container.append(qContainer);
-
-            nQuestions++;
-        }
-
-        function subOne() {
-            var container = document.getElementById("actualQuestions");
-            if (container.hasChildNodes() && container.childNodes.length > 1) {
-                container.removeChild(container.lastChild);
-                nQuestions--;
-            }
-        }
-
-        function addQuestions() {
-            // Number of inputs to create
-            var number = document.getElementById("nQuestions").value;
-
-            if (number > 0 && number <= 100) {
-                while (nQuestions != number) {
-                    if (nQuestions < number) {
-                        addOne();
+    $("#easyId").change((e) => {
+        if ($("#easyId").val() !== "") {
+            $.ajax({
+                url: "/validateId",
+                type: "POST",
+                data: {
+                    easyId: $("#easyId").val()
+                },
+                success: (res) => {
+                    console.log(res);
+                    if (res === "false") {
+                        $("#easyId").attr("style", "background-color:var(--main-color);");
                     } else {
-                        subOne();
+                        $("#easyId").attr("style", "background-color:#ed918c;");
                     }
                 }
-            } else {
-                alert("Please enter a number from 1 to 100."); //TODO: cooler alert
-            }
-
-            // Clear previous contents of the container
-            /*while (container.hasChildNodes())
-            {
-                container.removeChild(container.lastChild);
-            }*/
+            })
+        } else {
+            $("#easyId").css("background-color", "inherit");
         }
+    });
 
-        function initQuestions() {
-            while (nQuestions < 10) {
-                addOne();
-            }
+    function addOne() {
+        var container = document.getElementById("actualQuestions");
+        console.log(container);
+
+        var qContainer = document.createElement("div");
+        qContainer.setAttribute("class", "questionDiv");
+
+        // Create an input element for New Question
+        var newQuestion = document.createElement("input");
+        newQuestion.setAttribute("type", "text");
+        newQuestion.setAttribute("name", "questions[]");
+        newQuestion.setAttribute("placeholder", "New Question");
+
+        qContainer.prepend(newQuestion);
+        var questionText = document.createElement("p");
+        questionText.innerText = "Question " + (nQuestions + 1) + ": ";
+        qContainer.prepend(questionText);
+
+        container.append(qContainer);
+
+        nQuestions++;
+    }
+
+    function subOne() {
+        var container = document.getElementById("actualQuestions");
+        if (container.hasChildNodes() && container.childNodes.length > 1) {
+            container.removeChild(container.lastChild);
+            nQuestions--;
         }
-        initQuestions();
+    }
 
-        // $("ptgForm").submit((e) => {
-        //     e.preventDefault();
-        //
-        //     let form = $(this);
-        //     let url = form.attr('action');
-        //
-        //     $.ajax({
-        //         url: '/validate',
-        //         type: 'POST',
-        //         data: form.serialize(),
-        //         success: (res) => {
-        //             $
-        //         }
-        //     })
-        //
-        // });
-    </script>
+    function addQuestions() {
+        // Number of inputs to create
+        var number = document.getElementById("nQuestions").value;
+
+        if (number > 0 && number <= 100) {
+            while (nQuestions != number) {
+                if (nQuestions < number) {
+                    addOne();
+                } else {
+                    subOne();
+                }
+            }
+        } else {
+            alert("Please enter a number from 1 to 100."); //TODO: cooler alert
+        }
+    }
+
+    function initQuestions() {
+        while (nQuestions < 10) {
+            addOne();
+        }
+    }
+    initQuestions();
+</script>
 <%- include('partials/footer.ejs'); %>
