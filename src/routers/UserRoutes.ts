@@ -29,10 +29,11 @@ export class UserRouter {
             return;
         }
 
-        let user = await this.dbHandler.getUser(req.body.user);
+        let user = await this.dbHandler.getByUsername(req.body.user);
         if (user != null) {
             let hashedPass = User.hashPass(req.body.password);
-            if (hashedPass == user.passwordHash) {
+            console.log(hashedPass);
+            if (hashedPass === user.passwordHash) {
                 res.cookie("uid", user.uid?.toHexString()).redirect('/');
                 return;
             }

@@ -226,11 +226,28 @@ export class DBHandler {
     }
 
     async getUser(uid: string): Promise<User | null>  {
-        console.log(uid);
         try {
             if (this.db != null) {
                 const users = this.db.collection("Users");
                 let query = {_id: ObjectId(uid)};
+                let result = await users.findOne(query);
+                if (result) {
+                    return User.deserialize(result);
+                }
+                return null;
+            } else {
+                return null;
+            }
+        } catch (e) {
+            return null;
+        }
+    }
+
+    async getByUsername(name: string): Promise<User | null> {
+        try {
+            if (this.db != null) {
+                const users = this.db.collection("Users");
+                let query = {username: name};
                 let result = await users.findOne(query);
                 if (result) {
                     return User.deserialize(result);

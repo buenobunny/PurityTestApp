@@ -7,19 +7,109 @@
     <% }%>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        @media (max-width: 1200px) {
+            #subElements[show=off] {
+                display: none;
+            }
+            #subElements {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100vh;
+                z-index: 200;
+                background-color: var(--main-color);
+            }
+            #toggle {
+                display: inline-block;
+                float: right;
+                z-index: 201;
+                width: 40px;
+                height: 40px;
+                text-align: center;
+            }
+            #toggle i {
+                width: 20px;
+                height:20px;
+                font-size: 20px;
+            }
+            #toggle[show=on] {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+            }
+            #subElements h2 {
+                width: 90%;
+                margin: 10px 5% !important;
+            }
+            #spacing {
+                display: inline-block;
+                margin-top: 50px !important;
+                min-height: 60px;
+                background: rgba(0,0,0,0) !important;
+            }
+        }
+        @media (min-width: 1201px) {
+            #subElements {
+                display: inline-block !important;
+                float: right;
+            }
+            #toggle {
+                display: none;
+            }
+            #spacing {
+                display: none;
+            }
+        }
+    </style>
     <link rel="stylesheet" type="text/css" href="/styles.css"/>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://kit.fontawesome.com/d0a0962759.js" crossorigin="anonymous"></script>
 </head>
 <body>
 <div id="navbar">
     <div id="navbar-inside">
         <a href="/"><h1>Purity Test Generator</h1></a>
-        <% if (loggedIn) { %>
-            <a href="/logout"><h2>Logout</h2></a>
-            <a href="/new"><h2>Create New Test</h2></a>
-        <% } else { %>
-            <a href="/login"><h2>Login</h2></a>
-        <% }%>
+        <button id="toggle"><i class="fas fa-bars"></i><i class="fas fa-times"></i></button>
+        <script>
+            let shown = false;
+            $(".fa-times").prop("style","display:none;");
+            $("#toggle").click((e) => {
+                if (shown) {
+                    $(".fa-bars").prop("style","display:inline-block;");
+                    $(".fa-times").prop("style","display:none;");
+                    $("#toggle").fadeOut(200, () => {
+                        $("#subElements").fadeOut(500, () => {
+                            $("#toggle").attr("show","off");
+                            $("#toggle").fadeIn(200);
+                            $("#subElements").attr("show","off");
+                        });
+                    });
+                } else {
+                    $(".fa-bars").prop("style","display:none;");
+                    $(".fa-times").prop("style","display:inline-block;");
+                    $("#subElements").attr("show","on");
+                    $("#subElements").fadeIn(500, () => {
+                        $("#toggle").fadeOut(200, () => {
+                            $("#toggle").attr("show","on");
+                            $("#toggle").fadeIn(200);
+                        })
+                    });
+                }
+                shown = !shown;
+            });
+        </script>
+        <div id="subElements" show="off">
+            <h2 id="spacing"> </h2>
+            <a href="/all"><h2>Browse Tests</h2></a>
+            <% if (loggedIn) { %>
+                <a href="/new"><h2>Create New Test</h2></a>
+                <a href="/logout"><h2>Logout</h2></a>
+            <% } else { %>
+                <a href="/login"><h2>Login</h2></a>
+            <% }%>
+        </div>
     </div>
 </div>
 <div id="container">

@@ -218,17 +218,7 @@ app.get('/', async (req: Request, res: Response) => {
     let loggedIn: boolean = req.cookies != undefined && req.cookies.uid != undefined;
 
     let pTests: PurityTest[] | null = await dbHandler.getTests(10, 0);
-
-    if (pTests)
-        ejs.renderFile(getView('index'), {test_list: pTests, loggedIn: loggedIn}, {},
-            (err: Error, str: string) => {
-                if (err) {
-                    console.log(err.name + ": " + err.message);
-                }
-                res.send(str);
-            });
-    else
-        ejs.renderFile(getView('index'), {test_list: undefined, loggedIn: loggedIn}, {},
+        ejs.renderFile(getView('index'), {test_list: pTests != null ? pTests : undefined, loggedIn: loggedIn}, {},
             (err: Error, str: string) => {
                 if (err) {
                     console.log(err.name + ": " + err.message);
@@ -268,7 +258,7 @@ app.listen(process.env.PORT || 3000, async () => {
     if (await dbHandler.connect()) {
         console.log("Listening on port: " + (process.env.PORT || 3000));
         // @ts-ignore
-        process.send('ready');
+        // process.send('ready');
     } else {
         console.log("DB BROKE;");
         process.exit();
