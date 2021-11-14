@@ -2,6 +2,7 @@ import {DBHandler} from "../dbHandler";
 import {User} from "../objects/User";
 import express from 'express';
 import {Request, Response} from 'express';
+import striptags from "striptags";
 const emailValidator = require('email-validator');
 
 const cookieOptions = {
@@ -29,9 +30,9 @@ export class UserRouter {
             return;
         }
 
-        let user = await this.dbHandler.getByUsername(req.body.user);
+        let user = await this.dbHandler.getByUsername(striptags(req.body.user));
         if (user != null) {
-            let hashedPass = User.hashPass(req.body.password);
+            let hashedPass = User.hashPass(striptags(req.body.password));
             if (hashedPass === user.passwordHash) {
                 res.cookie("uid", user.uid?.toHexString()).redirect('/');
                 return;
@@ -52,14 +53,14 @@ export class UserRouter {
             res.redirect('/signup?msg=oopsError');
             return;
         }
-        let alreadyExists = await this.dbHandler.checkUserExists(req.body.user, req.body.email);
+        let alreadyExists = await this.dbHandler.checkUserExists(striptags(req.body.user), striptags(req.body.email));
         if (alreadyExists) {
             res.redirect('/signup?msg=oopsError');
             return;
         }
 
-        let hashedPass = User.hashPass(req.body.password);
-        let user: User = new User(req.body.user, req.body.email, hashedPass);
+        let hashedPass = User.hashPass(striptags(req.body.password));
+        let user: User = new User(striptags(req.body.user), striptags(req.body.email), hashedPass);
 
         let createdUser = await this.dbHandler.createUser(user);
 

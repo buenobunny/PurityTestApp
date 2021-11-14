@@ -84,9 +84,9 @@
                 success: (res) => {
                     console.log(res);
                     if (res === "false") {
-                        $("#easyId").attr("style", "background-color:var(--main-color);");
+                        $("#easyId").attr("style", "background-color:#ccfcbb");
                     } else {
-                        $("#easyId").attr("style", "background-color:#ed918c;");
+                        $("#easyId").attr("style", "background-color:#fcc0c0;");
                     }
                 }
             })
@@ -97,7 +97,6 @@
 
     function addOne() {
         var container = document.getElementById("actualQuestions");
-        console.log(container);
 
         var qContainer = document.createElement("div");
         qContainer.setAttribute("class", "questionDiv");

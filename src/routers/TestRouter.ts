@@ -3,6 +3,7 @@ import {User} from "../objects/User";
 import express from 'express';
 import {Request, Response} from 'express';
 import {PurityTest} from "../objects/PurityTest";
+import striptags from "striptags";
 
 export class TestRouter {
 
@@ -13,7 +14,6 @@ export class TestRouter {
 
     createTest = async (req: Request, res: Response) => {
 
-        //TODO: validate loggedIn
         if (req.cookies == undefined || req.cookies.uid == undefined) {
             res.redirect('/');
             return;
@@ -30,9 +30,13 @@ export class TestRouter {
             return;
         }
 
+        let strippedQuestions = req.body["questions[]"].map((old: string) => {
+            return striptags(old);
+        })
+
         let result = await this.dbHandler.addTest(
-            new PurityTest(req.body.title, req.body["questions[]"],
-                req.body.preText, req.body.postText, req.body.easyId));
+            new PurityTest(striptags(req.body.title), strippedQuestions,
+                striptags(req.body.preText), striptags(req.body.postText), striptags(req.body.easyId), striptags(req.cookies.uid)));
 
         if (result) {
             res.redirect('/show/' + req.body.easyId);
