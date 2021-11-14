@@ -241,8 +241,8 @@ form a {
     }
     #toggle[show=on] {
         position: fixed;
-        top: 20px;
-        right: 20px;
+        top: 40px;
+        right: 30px;
     }
     #subElements h2 {
         width: 90%;
