@@ -89,6 +89,7 @@ input[type=text]:focus, input[type=number]:focus {
 #testlist {
     width: 100%;
     display: table;
+    margin-bottom: 50px;
 }
 
 .table-header {
@@ -517,4 +518,59 @@ svg #main-circ {
     100% {
         transform: scale(1);
     }
+}
+
+.page-link {
+    background-color: var(--accent-dark);
+    color: white;
+    padding: 7px;
+    margin: 10px 5px;
+    margin-top: 0px;
+    display: inline-block;
+    width: 80px;
+    text-align: center;
+}
+
+.sortbtn {
+    background-color: var(--main-color);
+    color: white;
+    padding: 7px;
+    border: none;
+    cursor: pointer;
+    margin-bottom: 10px;
+    font-size: 16px;
+    min-width: 80px;
+}
+
+.sortdown {
+    position: relative;
+    display: inline-block;
+    margin-left: 5px;
+    font-size: 16px;
+}
+
+.sortdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.sortdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.sortpdown-content a:hover {background-color: #f1f1f1}
+
+.sortdown:hover .sortdown-content {
+    display: block;
+}
+
+.sortdown:hover .sortbtn {
+    background-color: var(--main-dark);
 }

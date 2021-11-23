@@ -1,5 +1,3 @@
-import {DBHandler} from "../dbHandler";
-
 export class PurityTest {
 
     static delimiter: string = "%%";
@@ -13,9 +11,10 @@ export class PurityTest {
     views: number;
     likes: number;
     creatorId: string;
+    createdAt: Date;
 
     constructor(title: string, questions: string[], preText: string, postText: string, easyId: string, creatorId: string,
-                views?: number, likes?: number) {
+                views?: number, likes?: number, createdAt?: Date) {
         this.title = title;
         this.questions = questions;
         this.preText = preText;
@@ -30,6 +29,7 @@ export class PurityTest {
             this.likes = likes;
         else
             this.likes = 0;
+        this.createdAt = (createdAt != undefined) ? createdAt : new Date();
     }
 
     serialize(): any {
@@ -41,7 +41,8 @@ export class PurityTest {
             postText: this.postText,
             likes: this.likes,
             views: this.likes,
-            creatorId: this.creatorId
+            creatorId: this.creatorId,
+            createdAt: this.createdAt
         }
     }
 
@@ -53,7 +54,8 @@ export class PurityTest {
         }
 
         return new PurityTest(data.title, data.questions.split(PurityTest.arrDelimiter),
-            data.preText, data.postText, data.easyId, (data.creatorId == null) ? "" : data.creatorId, data.views, data.likes);
+            data.preText, data.postText, data.easyId, (data.creatorId == null) ? "" : data.creatorId, data.views, data.likes,
+            data.createdAt);
 
     }
 }

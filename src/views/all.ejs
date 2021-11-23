@@ -1,6 +1,27 @@
 <%- include('partials/header.ejs', {title: undefined}); %>
     <% if (test_list) { %>
-        <h2>All Tests</h2>
+        <a href="/all"><h2>All Tests</h2></a>
+        <div class="sortdown">
+            <button class="sortbtn">Sort</button>
+            <div class="sortdown-content">
+                <% if (page != undefined) { %>
+                    <a href="/all/<%= page.curr %>">Newest</a>
+                    <a href="/all/<%= page.curr %>?sort=likes">Likes</a>
+                    <a href="/all/<%= page.curr %>?sort=views">Views</a>
+                <% } else { %>
+                    <a href="/all">Newest</a>
+                    <a href="/all?sort=likes">Likes</a>
+                    <a href="/all?sort=views">Views</a>
+                <% } %>
+            </div>
+        </div>
+        <br/>
+        <% if (page != undefined && page.prev) { %>
+            <a class="page-link" style="float:left;" href="/all/<%= (page.curr - 1) %><%= (page.sort) ? "?sort=" + page.sort : "" %>">Previous</a>
+        <% } %>
+        <% if (page != undefined && page.next) { %>
+            <a class="page-link" style="float:right;" href="/all/<%= (page.curr + 1) %><%= (page.sort) ? "?sort=" + page.sort : "" %>">Next</a>
+        <% } %>
         <%- include('partials/testlist.ejs', {list: test_list}); %>
     <% } %>
 <%- include('partials/footer.ejs'); %>
