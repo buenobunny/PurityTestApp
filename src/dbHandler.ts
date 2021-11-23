@@ -39,6 +39,20 @@ export class DBHandler {
         }
     }
 
+    async getNumTests(): Promise<number | null> {
+        try {
+            if (this.db != null) {
+                const tests = await this.db.collection("Tests").countDocuments();
+                if (tests > -1) {
+                    return tests;
+                }
+            }
+            return null;
+        } catch (e) {
+            return null;
+        }
+    }
+
     async getTests(num: number, start: number, sort?: string): Promise<PurityTest[] | null> {
         try {
             if (this.db != null) {
@@ -46,10 +60,10 @@ export class DBHandler {
 
                 let cursor = null;
                 if (sort != null) {
-                    cursor = await tests.find({ views: { $gt: 0 }},
+                    cursor = await tests.find({ views: { $gt: -1 }},
                         {sort: {likes: -1, views: -1}});
                 } else {
-                    cursor = await tests.find();
+                    cursor = await tests.find({}, {sort: {createdAt: "desc"}});
                 }
 
                 let i: number = 0;
@@ -148,7 +162,8 @@ export class DBHandler {
                         likes: pt.likes,
                         views: pt.views,
                         preText: pt.preText,
-                        postText: pt.postText
+                        postText: pt.postText,
+                        createdAt: pt.createdAt
                     },
                 };
                 const result = await tests.updateOne(filter, updateDoc, options);

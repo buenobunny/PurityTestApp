@@ -5,13 +5,13 @@ import {DBHandler} from "./dbHandler";
 // @ts-ignore
 import express from 'express';
 import {Request, Response} from 'express';
-import {PurityTest} from "./objects/PurityTest";
-import {UserRouter} from "./routers/UserRoutes";
-import {TestRouter} from "./routers/TestRouter";
 let ejs = require('ejs');
 const path = require('path');
 let bodyParser = require('body-parser');
 let cookieParser = require('cookie-parser');
+import {PurityTest} from "./objects/PurityTest";
+import {UserRouter} from "./routers/UserRoutes";
+import {TestRouter} from "./routers/TestRouter";
 
 // @ts-ignore
 const app = express();
@@ -185,15 +185,19 @@ app.get('/show/:id', async (req: Request, res: Response) => {
 
 app.get('/all/:page', async (req: Request, res: Response) => {
     let sort: string | undefined = undefined;
-    // if (req.query != undefined && req.query.sort != undefined) {
-    //     sort = req.query.sort;
-    // }
+    if (req.query != undefined && req.query.sort != undefined) {
+        sort = req.query.sort as string;
+    }
     let start: number = parseInt(req.params["page"]) * 25;
     let tests = await dbHandler.getTests(25, start, sort);
+    let numTests: number | null = await dbHandler.getNumTests();
 
     if (tests)
-        ejs.renderFile(getView('all'), {test_list: tests,
-            loggedIn: req.cookies != undefined && req.cookies.uid != undefined},
+        ejs.renderFile(getView('all'), {
+                test_list: tests,
+                loggedIn: req.cookies != undefined && req.cookies.uid != undefined,
+                page: {next: numTests && numTests > start + 25, prev: start > 0, curr: parseInt(req.params["page"]), sort: sort}
+                },
             (err: Error, str: string) => {
                 res.send(str);
             });
@@ -202,10 +206,18 @@ app.get('/all/:page', async (req: Request, res: Response) => {
 });
 
 app.get('/all', async (req: Request, res: Response) => {
-    let tests = await dbHandler.getTests(25, 0);
+    let sort: string | undefined = undefined;
+    if (req.query != undefined && req.query.sort != undefined) {
+        sort = req.query.sort as string;
+    }
+    let tests = await dbHandler.getTests(25, 0, sort);
+    let numTests: number | null = await dbHandler.getNumTests();
     if (tests)
-        ejs.renderFile(getView('all'), {test_list: tests,
-                loggedIn: req.cookies != undefined && req.cookies.uid != undefined},
+        ejs.renderFile(getView('all'), {
+                test_list: tests,
+                loggedIn: req.cookies != undefined && req.cookies.uid != undefined,
+                page: {next: numTests && numTests > 25, prev: false, curr: 0, sort: sort}
+                },
             (err: Error, str: string) => {
                 res.send(str);
             });
