@@ -1,0 +1,56 @@
+<%- include('../partials/header.ejs', {title: title, loggedIn: loggedIn}); %>
+
+<a class="bruh" href="/myResults" style="float:left;display:inline-block;"><h2>Back</h2></a>
+<a class="bruh" href="/show/<%= testId %>" style="float:right;display:inline-block;"><h2>Retake Test</h2></a>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+    google.charts.load('current', {'packages':['corechart']});
+    google.charts.setOnLoadCallback(drawChart);
+    function drawChart() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('datetime', 'Date Taken');
+        data.addColumn('number', 'Percentage');
+        data.addRows([
+            <% results.forEach((result) => { %>
+            [new Date("<%= result.createdAt.toISOString() %>"), <%= (result.percentage / 100) %>],
+            <% }); %>
+        ]);
+        var options = {'title':'Results',
+            hAxis: {
+                title: 'Date Taken'
+            },
+            vAxis: {
+                title: 'Percentage',
+                format: 'percent',
+                minValue: 0,
+                maxValue: 1
+            },
+        };
+        var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+        chart.draw(data, options);
+    }
+</script>
+<div id="chart_div"></div>
+<style>
+    #chart_div {
+        width: 100%;
+        height: 70%;
+        position: relative;
+        top:60px;
+    }
+    .bruh {
+        background-color: var(--main-dark);
+        color: white;
+        transition: .5s;
+    }
+    .bruh:hover {
+        background-color: var(--accent-dark);
+    }
+    .bruh h2 {
+        margin: 0;
+        padding: 7px;
+        font-size: 1.2em;
+    }
+</style>
+
+<%- include('../partials/footer.ejs'); %>

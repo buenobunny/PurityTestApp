@@ -1,0 +1,42 @@
+<%- include('../partials/header.ejs', {title: "My Stuff", loggedIn: loggedIn}); %>
+<link rel="stylesheet" type="text/css" href="/user.css"/>
+<h1>My Stuff</h1>
+<h2>Tests</h2>
+<div id="myTests">
+    <a class="card" href="/new">
+        <div class="card-container">
+            <h2>Create New</h2>
+        </div>
+    </a>
+    <% if (tests) {%>
+        <% tests.forEach((test) => { %>
+            <a class="card" href="/test/<%= test.easyId %>">
+                <div class="card-container">
+                    <h3><%= test.title %></h3>
+                    <h4><%= test.likes %> likes</h4>
+                </div>
+            </a>
+        <% }); %>
+    <%}%>
+
+    <a class="card" href="/myTests">
+        <div class="card-container">
+            <h2>View All My Tests</h2>
+        </div>
+    </a>
+</div>
+<h2>Past Results</h2>
+<div id="myResults">
+    <% if (results) {%>
+        <% results.forEach((result) => { %>
+            <a class="card" href="/myResults/<%= result.testId %>">
+                <div class="card-container">
+                    <h3><%= result.title %></h3>
+                    <h4><%= result.n %> results</h4>
+                </div>
+            </a>
+        <% }); %>
+    <%}%>
+</div>
+
+<%- include('../partials/footer.ejs'); %>
