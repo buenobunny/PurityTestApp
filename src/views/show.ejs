@@ -79,7 +79,8 @@
         <input type="checkbox" name="questionAnswer[]" id="question<%= totalQuestions %>" /><label for="question<%= totalQuestions %>"> <%= question %></label><br><br>
     <% }); %>
     <input type="hidden" name="questionAnswer[]" value="1"/>
-    <input type="hidden" name="title" value="<%= test.title %>"/>
+    <input type="hidden" name="testTitle" value="<%= test.title %>"/>
+    <input type="hidden" name="testId" value="<%= test.easyId %>"/>
     <input type="hidden" name="postText" value="<%= test.postText %>"/>
     <input type="hidden" name="totalQuestions" value="<%= totalQuestions %>"/>
     <input type="submit" value="Submit!">
