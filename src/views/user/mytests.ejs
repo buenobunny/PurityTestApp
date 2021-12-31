@@ -9,9 +9,8 @@
     </a>
     <% if (tests) {%>
         <% tests.forEach((test) => { %>
-            <% console.log(test); %>
 
-            <a class="card" href="/show/<%= test.easyId %>">
+            <a class="card" href="/test/<%= test.easyId %>">
                 <div class="card-container">
                     <h3><%= test.title %></h3>
                     <h4><%= test.likes %> likes</h4>

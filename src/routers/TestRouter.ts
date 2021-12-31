@@ -17,7 +17,7 @@ export class TestRouter {
 
     createTest = async (req: Request, res: Response) => {
 
-        if (req.cookies == undefined || req.cookies.uid == undefined) {
+        if (req.signedCookies == undefined || req.signedCookies.uid == undefined) {
             res.redirect('/');
             return;
         }
@@ -27,22 +27,32 @@ export class TestRouter {
             return;
         }
 
-        if (!req.body.title || !req.body["questions[]"] || !req.body.postText || !req.body.preText || !req.body.easyId) {
+        if (!req.body.title || !req.body["questions[]"] || !req.body.postText || !req.body.preText || !req.body.easyId ||
+            /^[a-zA-Z0-9]+$/.test(req.body.easyId)) {
             res.status(500);
-            res.send("Error. Some fields were not filled out.");
+            res.send("Error. Some fields were not filled out correctly.");
             return;
         }
 
         let strippedQuestions = req.body["questions[]"].map((old: string) => {
-            return striptags(old);
-        })
+            // @ts-ignore
+            return striptags(old).replaceAll("%", "").trim();
+        });
 
-        let result = await this.dbHandler.testFunctions.createTest(
-            new PurityTest(striptags(req.body.title), strippedQuestions,
-                striptags(req.body.preText), striptags(req.body.postText), striptags(req.body.easyId), striptags(req.cookies.uid)));
+        let result = null;
+        let pt = null;
 
-        if (result) {
-            res.redirect('/show/' + req.body.easyId);
+        if (req.body.easyId.length < 40 && !(await this.dbHandler.testFunctions.checkAlreadyExists(req.body.easyId))) {
+            pt = new PurityTest(striptags(req.body.title), strippedQuestions,
+                    striptags(req.body.preText), striptags(req.body.postText),
+                    striptags(req.body.easyId).replace(/\s/g, ""),
+                    striptags(req.signedCookies.uid));
+            if (pt)
+                result = await this.dbHandler.testFunctions.createTest(pt);
+        }
+
+        if (pt && result) {
+            res.redirect('/test/' + pt.easyId);
         } else {
             res.status(500);
             res.send("Error in creating the test. Probably an already used ID.");
@@ -55,17 +65,17 @@ export class TestRouter {
             return;
         }
 
-        if (req.cookies.uid == undefined) {
+        if (req.signedCookies.uid == undefined) {
             res.status(403).send("Access unauthorized.");
             return;
         }
 
-        let user: User | null = await this.dbHandler.userFunctions.getUser(req.cookies.uid);
+        let user: User | null = await this.dbHandler.userFunctions.getUser(req.signedCookies.uid);
         let test: PurityTest | null = await this.dbHandler.testFunctions.findTest(req.body.testId);
 
         if (user != null && test != null) {
 
-            if (req.cookies.uid !== user.uid?.toHexString()) {
+            if (req.signedCookies.uid !== user.uid?.toHexString()) {
                 res.status(403).send("Access unauthorized.");
                 return;
             }

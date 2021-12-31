@@ -18,13 +18,15 @@ const cookieOptions = {
 export class UserRouter {
 
     private dbHandler: DBFunctions;
-    constructor(dbHandler: DBFunctions) {
+    private cookieOptions: any;
+    constructor(dbHandler: DBFunctions, cookieOptions: any) {
         this.dbHandler = dbHandler;
+        this.cookieOptions = cookieOptions;
     }
 
     loginLogic = async (req: Request, res: Response) => {
 
-        if (req.cookies != undefined && req.cookies.uid != undefined) {
+        if (req.signedCookies != undefined && req.signedCookies.uid != undefined) {
             res.redirect('/');
             return;
         }
@@ -38,7 +40,7 @@ export class UserRouter {
         if (user != null) {
             let hashedPass = User.hashPass(striptags(req.body.password));
             if (hashedPass === user.passwordHash) {
-                res.cookie("uid", user.uid?.toHexString()).redirect('/');
+                res.cookie("uid", user.uid?.toHexString(), this.cookieOptions).redirect('/');
                 return;
             }
         }
@@ -46,7 +48,7 @@ export class UserRouter {
     }
 
     signupLogic = async (req: Request, res: Response) => {
-        if (req.cookies != undefined && req.cookies.uid != undefined) {
+        if (req.signedCookies != undefined && req.signedCookies.uid != undefined) {
             res.redirect('/');
             return;
         }
@@ -69,7 +71,7 @@ export class UserRouter {
         let createdUser = await this.dbHandler.userFunctions.createUser(user);
 
         if (createdUser) {
-            res.cookie("uid", createdUser.uid);
+            res.cookie("uid", createdUser.uid?.toHexString(), this.cookieOptions).redirect('/');
         } else {
             console.log("couldnt create");
             res.redirect('/signup?msg=oopsError');
@@ -86,8 +88,8 @@ export class UserRouter {
      * @param res
      */
     saveResult = async (req: Request, res: Response) => {
-        if (req.cookies.uid && req.body.testId && req.body.testTitle && req.body.percentage) {
-            let result: TestResult = new TestResult(req.body.testId, req.body.testTitle, req.cookies.uid, req.body.percentage);
+        if (req.signedCookies.uid && req.body.testId && req.body.testTitle && req.body.percentage) {
+            let result: TestResult = new TestResult(req.body.testId, req.body.testTitle, req.signedCookies.uid, req.body.percentage);
             let saved = await this.dbHandler.userFunctions.saveResult(result);
             if (saved) {
                 res.redirect('/myResults/' + req.body.testId);
@@ -95,14 +97,14 @@ export class UserRouter {
                 res.send(await getErrorPage(500, "Something went wrong when processing your request.", true));
             }
         } else {
-            res.send(await getErrorPage(400, "Something was missing from your request!", req.cookies.uid != undefined));
+            res.send(await getErrorPage(400, "Something was missing from your request!", req.signedCookies.uid != undefined));
         }
     }
 
     myStuff = async(req: Request, res: Response) => {
-        if (req.cookies.uid) {
-            let results = await this.dbHandler.userFunctions.getResultsForUser(req.cookies.uid);
-            let tests = await this.dbHandler.testFunctions.getTestsMadeBy(req.cookies.uid, 4);
+        if (req.signedCookies.uid) {
+            let results = await this.dbHandler.userFunctions.getResultsForUser(req.signedCookies.uid);
+            let tests = await this.dbHandler.testFunctions.getTestsMadeBy(req.signedCookies.uid, 4);
             ejs.renderFile(getView('user/mystuff'), {
                 title: "My Stuff",
                 results: results,
@@ -122,8 +124,8 @@ export class UserRouter {
     }
 
     myTests = async(req: Request, res: Response) => {
-        if (req.cookies.uid) {
-            let tests = await this.dbHandler.testFunctions.getTestsMadeBy(req.cookies.uid);
+        if (req.signedCookies.uid) {
+            let tests = await this.dbHandler.testFunctions.getTestsMadeBy(req.signedCookies.uid);
             ejs.renderFile(getView('user/mytests'), {
                 title: "My Tests",
                 tests: tests,
@@ -142,8 +144,8 @@ export class UserRouter {
     }
 
     myResults = async(req: Request, res: Response) => {
-        if (req.cookies.uid && req.params.id) {
-            let results = await this.dbHandler.userFunctions.getResultsForUserTest(req.cookies.uid, req.params.id);
+        if (req.signedCookies.uid && req.params.id) {
+            let results = await this.dbHandler.userFunctions.getResultsForUserTest(req.signedCookies.uid, req.params.id);
             ejs.renderFile(getView('user/myresults'), {
                 title: "Result History",
                 results: results,

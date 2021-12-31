@@ -23,14 +23,16 @@ export async function runApp() {
     app.use(bodyParser.urlencoded({ extended:false }));
     app.use(bodyParser.json());
     app.use(express.static(__dirname + '/assets'));
-    app.use(cookieParser());
+    app.use(cookieParser(process.env.COOKIE_SECRET));
 
     let emailValidator = require('email-validator');
 
     const cookieOptions = {
-        maxAge: 10000,
-        secure: true,
-        httpOnly: true
+        maxAge: 604800,
+        secure: !(process.env.dev === "TRUE"),
+        httpOnly: true,
+        sameSite: 'strict',
+        signed: true
     };
 
     let dbHandler: DBHandler = new DBHandler();
@@ -41,7 +43,7 @@ export async function runApp() {
         process.exit();
     }
     let dbFuncs: DBFunctions = connectRes as DBFunctions;
-    let userRoutes: UserRouter = new UserRouter(dbFuncs);
+    let userRoutes: UserRouter = new UserRouter(dbFuncs, cookieOptions);
     let testRoutes: TestRouter = new TestRouter(dbFuncs);
 
 
@@ -54,12 +56,12 @@ export async function runApp() {
     }
 
     function checkLoggedIn(req: Request) {
-        return !(req.cookies == undefined || req.cookies.uid == undefined);
+        return !(req.signedCookies == undefined || req.signedCookies.uid == undefined);
     }
 
     app.use((req: Request, res: Response, next) => {
 
-        if (req.cookies != undefined && req.cookies.uid === 'undefined') {
+        if (req.signedCookies != undefined && req.signedCookies.uid === 'undefined') {
             res.clearCookie('uid');
         }
 
@@ -68,7 +70,7 @@ export async function runApp() {
 
     app.get('/new', (req: Request, res: Response) => {
 
-        if (req.cookies == undefined || req.cookies.uid == undefined) {
+        if (req.signedCookies == undefined || req.signedCookies.uid == undefined) {
             res.redirect('/');
             return;
         }
@@ -101,7 +103,7 @@ export async function runApp() {
 
     app.get('/signup', (req: Request, res: Response) => {
 
-        if (req.cookies != undefined && req.cookies.uid != undefined) {
+        if (req.signedCookies != undefined && req.signedCookies.uid != undefined) {
             res.redirect('/');
             return;
         }
@@ -121,7 +123,7 @@ export async function runApp() {
     })
 
     app.post('/validateId', async (req: Request, res: Response) => {
-        let isValid = req.body != undefined && req.body.easyId != undefined &&
+        let isValid = req.body != undefined && req.body.easyId != undefined && req.body.easyId.length < 40 &&
             /^[a-zA-Z0-9]+$/.test(req.body.easyId) && await dbFuncs.testFunctions.checkAlreadyExists(req.body.easyId);
 
         res.send(isValid ? "true" : "false");
@@ -176,10 +178,10 @@ export async function runApp() {
             return;
         }
 
-        let loggedIn: boolean = req.cookies != undefined && req.cookies.uid != undefined;
+        let loggedIn: boolean = req.signedCookies != undefined && req.signedCookies.uid != undefined;
         let user: User | null = null;
         if (loggedIn) {
-            user = await dbFuncs.userFunctions.getUser(req.cookies.uid);
+            user = await dbFuncs.userFunctions.getUser(req.signedCookies.uid);
         }
         let liked: boolean = (user != null) ? await dbFuncs.userFunctions.findLike(user.username, id) : false;
 
@@ -214,7 +216,7 @@ export async function runApp() {
         if (tests)
             ejs.renderFile(getView('all'), {
                     test_list: tests,
-                    loggedIn: req.cookies != undefined && req.cookies.uid != undefined,
+                    loggedIn: req.signedCookies != undefined && req.signedCookies.uid != undefined,
                     page: {next: numTests && numTests > start + 25, prev: start > 0, curr: parseInt(req.params["page"]), sort: sort}
                 },
                 (err: Error, str: string) => {
@@ -234,7 +236,7 @@ export async function runApp() {
         if (tests)
             ejs.renderFile(getView('all'), {
                     test_list: tests,
-                    loggedIn: req.cookies != undefined && req.cookies.uid != undefined,
+                    loggedIn: req.signedCookies != undefined && req.signedCookies.uid != undefined,
                     page: {next: numTests && numTests > 25, prev: false, curr: 0, sort: sort}
                 },
                 (err: Error, str: string) => {
@@ -246,7 +248,7 @@ export async function runApp() {
 
     app.get('/', async (req: Request, res: Response) => {
 
-        let loggedIn: boolean = req.cookies != undefined && req.cookies.uid != undefined;
+        let loggedIn: boolean = req.signedCookies != undefined && req.signedCookies.uid != undefined;
 
         let pTests: PurityTest[] | null = await dbFuncs.testFunctions.getTests(10, 0);
         ejs.renderFile(getView('index'), {test_list: pTests != null ? pTests : undefined, loggedIn: loggedIn}, {},
@@ -259,7 +261,7 @@ export async function runApp() {
     });
 
     app.get('/*', async (req: Request, res: Response) => {
-        let str = await getErrorPage(404, "The page you're looking for doesn't exist!", req.cookies.uid != undefined);
+        let str = await getErrorPage(404, "The page you're looking for doesn't exist!", req.signedCookies.uid != undefined);
         res.send(str);
     })
 
