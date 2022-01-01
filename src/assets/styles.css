@@ -291,15 +291,15 @@ form a {
     }
     #likeDiv {
         position: fixed;
-        right: 30px;
-        bottom: 30px;
-        width: 80px;
+        right: 45px;
+        bottom: 45px;
+        width: 70px;
         border-radius: 50%;
         background-color: var(--main-dark);
     }
     #likeDiv svg {
         position: relative;
-        width: 100%;
+        width: 100% !important;
         top: 5px;
     }
 }
