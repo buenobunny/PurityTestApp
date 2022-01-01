@@ -27,8 +27,8 @@ export class TestRouter {
             return;
         }
 
-        if (!req.body.title || !req.body["questions[]"] || !req.body.postText || !req.body.preText || !req.body.easyId ||
-            /^[a-zA-Z0-9]+$/.test(req.body.easyId)) {
+        if (req.body.title == undefined || req.body["questions[]"] == undefined
+            || req.body.postText == undefined || req.body.preText == undefined || req.body.easyId == undefined) {
             res.status(500);
             res.send("Error. Some fields were not filled out correctly.");
             return;
@@ -38,6 +38,7 @@ export class TestRouter {
             // @ts-ignore
             return striptags(old).replaceAll("%", "").trim();
         });
+
 
         let result = null;
         let pt = null;
